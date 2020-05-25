@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}UtiliserPromo index{% endblock %}
+
+{% block body %}
+    <h1>UtiliserPromo index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for utiliser_promo in utiliser_promos %}
+            <tr>
+                <td>{{ utiliser_promo.id }}</td>
+                <td>
+                    <a href="{{ path('utiliser_promo_show', {'id': utiliser_promo.id}) }}">show</a>
+                    <a href="{{ path('utiliser_promo_edit', {'id': utiliser_promo.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="2">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('utiliser_promo_new') }}">Create new</a>
+{% endblock %}

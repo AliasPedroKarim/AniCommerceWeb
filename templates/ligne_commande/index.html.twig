@@ -1,0 +1,241 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ app.user ? app.user.nom ~ ' | ' : '' }} Votre panier - {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+
+        {% set to = 0 %}
+
+        {% if app.user is empty %}
+            <div class="alert alert-warning" role="alert">
+                Etant donner que vous n'est pas connecter votre panier panier n'est sauvegarder que temporairement !<br>
+                Si vous voulez passer votre commande, il faudra vous <a href="{{ path('app_login') }}">connecter</a> ! Si vous n'avez pas de compte vous pouvez vous en créer un
+                <a href="{{ path('utilisateur_register') }}">ici</a>
+            </div>
+        {% endif %}
+
+        <h1>Votre Panier</h1>
+
+        <hr class="mb-3">
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantite</th>
+                <th>Prix Unitaire</th>
+                <th>Prix Total</th>
+                <th>actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% if app.user %}
+                {% for ligne_commande in ligne_commandes %}
+                    <tr>
+                        <td>{{ ligne_commande.idProduit.libelle }}</td>
+                        <td>
+                            <form style="display: inline-block" method="post" action="{{ path('ligne_commande_edit', {'id': ligne_commande.id}) }}">
+                                <div class="form-row">
+                                    <div class="col">
+                                        {%  set to = to + (ligne_commande.prixUnitaire * ligne_commande.quantite) %}
+                                        {{ form_widget(forms[ligne_commande.id].quantite,
+                                            { 'attr':
+                                                {
+                                                    'class': 'form-control' ~ ( forms[ligne_commande.id].quantite.vars['errors'] |length > 0 ? ' is-invalid' : '' ) ~ ' ligne_commande_qte__' ~ ligne_commande.id
+                                                }
+                                            })
+                                        }}
+                                    </div>
+                                    <div class="col">
+                                        <button class="btn btn-info" id="ligneCommandeBtn{{ ligne_commande.id }}" style="display: none" type="submit">Modifier</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </td>
+                        <td>{{ ligne_commande.prixUnitaire }} €</td>
+                        <td>{{ ligne_commande.prixUnitaire * ligne_commande.quantite }} €</td>
+                        <td>
+                            <a class="btn" href="{{ path('ligne_commande_show', {'id': ligne_commande.id}) }}">show</a>
+                            <a class="btn" href="{{ path('ligne_commande_edit', {'id': ligne_commande.id}) }}">edit</a>
+                            <form style="display: inline-block" method="post" id="FormDeleteLigneCommande{{ ligne_commande.id }}" action="{{ path('ligne_commande_delete', {'id': ligne_commande.id}) }}" >
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ligne_commande.id) }}">
+                                <input type="hidden" name="name" id="NameLigneCommande{{ ligne_commande.id }}" value="{{ ligne_commande.idProduit.libelle }}">
+                                <button class="btn btn-danger handle-delete-ligneCommande" data-id="{{ ligne_commande.id }}" id="HandleDeleteLigneCommande{{ ligne_commande.id }}">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% if loop.last %}
+                        <tr>
+                            <td colspan="3">
+                                <b>Total : </b> {{ to }} €
+                            </td>
+                            <td>
+                                <form style="display: inline-block" method="post" id="FormClearCommande" action="{{ path('ligne_commande_clear', {'id': ligne_commande.idCommande.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('clear' ~ ligne_commande.idCommande.id) }}">
+                                    <button class="btn btn-danger" id="HandleClearCommande">Vider</button>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="{{ path('commande_paiement_step', {'number': 1}) }}" class="btn btn-lg btn-secondary" style="font-weight: 700;">Passer la commande</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            Votre panier est vide !
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+
+                {% set sLigneCommandes = app.session.get('__ligne_commandes') %}
+                {% for sLigneCommande in sLigneCommandes %}
+                    <tr>
+                        <td>{{ sLigneCommande['produit'].libelle }}</td>
+                        <td>
+                            <form style="display: inline-block" method="post" action="{{ path('ligne_commande_sedit', {'produit': sLigneCommande['produit'].id}) }}">
+                                <div class="form-row">
+                                    <div class="col">
+                                        {%  set to = to + (sLigneCommande['produit'].prixHt * sLigneCommande['quantite']) %}
+                                        <div class="form-group">
+                                            <input type="text" name="quantite" value="{{ sLigneCommande['quantite'] }}" class="form-control {{ 'ligne_commande_produit__' ~ sLigneCommande['produit'].id }}" aria-describedby="emailHelp">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('session_edit' ~ sLigneCommande['produit'].id) }}">
+                                    <div class="col">
+                                        <button class="btn btn-info" id="ligneCommandeBtn__session_{{ sLigneCommande['produit'].id }}" style="display: none" type="submit">Modifier</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </td>
+                        <td>{{ sLigneCommande['produit'].prixHt }} €</td>
+                        <td>{{ sLigneCommande['produit'].prixHt * sLigneCommande['quantite'] }} €</td>
+                        <td>
+                            <form style="display: inline-block" method="post" action="{{ path('ligne_commande_sdelete', {'produit': sLigneCommande['produit'].id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="_token" value="{{ csrf_token('session_delete' ~ sLigneCommande['produit'].id) }}">
+                                <button class="btn btn-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% if loop.last %}
+                        <tr>
+                            <td colspan="3">
+                                <b>Total : </b> {{ to }} €
+                            </td>
+                            <td>
+                                <form style="display: inline-block" method="post" id="FormClearCommande" action="{{ path('ligne_commande_clear_s') }}">
+                                    <button class="btn btn-danger" id="HandleClearCommande">Vider</button>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-lg btn-secondary disabled" style="font-weight: 700;">Passer la commande</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    <tr>
+                        <td colspan="5">
+                            Votre panier est vide !
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {{ include('layout/notify_script.html.twig') }}
+
+    <script type="text/javascript">
+        $(document).ready(() => {
+            function handleConfirm(message, button, form) {
+                button.on('click', (e) => {
+                    e.preventDefault();
+                    window.Swal.fire({
+                        title: 'Etes vous sur ?',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        cancelButtonText: 'Non',
+                        confirmButtonText: 'Oui'
+                    }).then((result) => {
+                        if (result.value) {
+                            form.submit();
+                        }
+                    })
+                });
+            }
+
+            $('.handle-delete-ligneCommande').on('click', (e) => {
+                e.preventDefault();
+
+                let id = $(e.target).data('id');
+                let name = $(`#NameLigneCommande${id}`).val();
+
+                window.Swal.fire({
+                    title: 'Etes vous sur ?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    html: `En cliquant, sur \"oui\" vous allez retirer le produit <b>${name}</b> de votre panier !`,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: 'Non',
+                    confirmButtonText: 'Oui'
+                }).then((result) => {
+                    if (result.value) {
+                        $(`#FormDeleteLigneCommande${id}`).submit();
+                    }
+                });
+            });
+
+            handleConfirm("En cliquant, sur \"oui\" vous allez vider votre panier.", $("#HandleClearCommande"), $("#FormClearCommande"));
+        });
+
+    </script>
+
+    <script type="application/javascript" async>
+        $(document).ready((e) => {
+            {% if app.user %}
+                {% for ligne_commande in ligne_commandes %}
+                    $('.ligne_commande_qte__{{ ligne_commande.id }}').bind("change paste keyup", (e) => {
+                        if (e.currentTarget.defaultValue !== e.currentTarget.value) {
+                            return $('#ligneCommandeBtn{{ ligne_commande.id }}').css({
+                                display: 'block'
+                            });
+                        }
+                        return $('#ligneCommandeBtn{{ ligne_commande.id }}').css({
+                            display: 'none'
+                        });
+                    });
+                {% endfor %}
+            {% else %}
+                {% set sLigneCommandes = app.session.get('__ligne_commandes') %}
+                {% for sLigneCommande in sLigneCommandes %}
+                    $('.ligne_commande_produit__{{ sLigneCommande['produit'].id }}').bind("change paste keyup", (e) => {
+                        if (e.currentTarget.defaultValue !== e.currentTarget.value) {
+                            return $('#ligneCommandeBtn__session_{{ sLigneCommande['produit'].id }}').css({
+                                display: 'block'
+                            });
+                        }
+                        return $('#ligneCommandeBtn__session_{{ sLigneCommande['produit'].id }}').css({
+                            display: 'none'
+                        });
+                    });
+                {% endfor %}
+            {% endif %}
+        })
+    </script>
+{% endblock %}

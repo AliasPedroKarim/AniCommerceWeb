@@ -1,0 +1,373 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiment Etape 1 - {{ parent() }}{% endblock %}
+
+{% block body %}
+
+	<div class="container">
+		<div class="py-5 text-center">
+			<img class="d-block mx-auto mb-4" src="{{ asset('favicon.gif') }}" alt="" width="72" height="72">
+			<h2>Commander</h2>
+			<p class="lead">
+				Vous êtes actuellement entrain de procéder à un paiement sur le site.
+			</p>
+		</div>
+
+		<div class="row">
+			<div class="col-md-4 order-md-2 mb-4">
+				<h4 class="d-flex justify-content-between align-items-center mb-3">
+					<span class="text-muted">Votre panier</span>
+					<span class="badge badge-secondary badge-pill">{{ ligne_commandes|reduce((carry, v) => carry + v.quantite) }}</span>
+				</h4>
+				<ul class="list-group mb-3">
+
+					{% for ligne_commande in ligne_commandes %}
+						<li class="list-group-item d-flex justify-content-between lh-condensed">
+							<div>
+								<h6 class="my-0">{{ ligne_commande.idProduit.libelle }}</h6>
+								<small class="text-muted" title="{{ ligne_commande.idProduit.description }}">{{ ligne_commande.idProduit.description|split(" ")|slice(0, 5)|join(" ") }}</small>
+							</div>
+							<span class="text-muted">{{ ligne_commande.prixUnitaire * ligne_commande.quantite }} €</span>
+						</li>
+					{% endfor %}
+
+					<li class="list-group-item d-flex justify-content-between bg-light">
+						<div class="text-success">
+							<h6 class="my-0">Promo code</h6>
+							<small>EXAMPLECODE</small>
+						</div>
+						<span class="text-success">-0 €</span>
+					</li>
+					<li class="list-group-item d-flex justify-content-between">
+						<span>Total (EUR)</span>
+						<strong>{{ ligne_commandes|reduce((carry, v) => carry + (v.quantite * v.prixUnitaire)) }} €</strong>
+					</li>
+				</ul>
+
+				<form class="card p-2">
+					<div class="input-group">
+						<input type="text" class="form-control" placeholder="Promo code">
+						<div class="input-group-append">
+							<button type="submit" class="btn btn-secondary">Utiliser</button>
+						</div>
+					</div>
+				</form>
+
+				<hr class="mb-4">
+
+				<h4 class="d-flex justify-content-between align-items-center mb-3">
+					<span class="text-muted">Vos adresses</span>
+					<span class="badge badge-secondary badge-pill" id="AdresseCount">...</span>
+				</h4>
+
+				<div class="container" id="AdresseList">
+
+				</div>
+
+			</div>
+			<div class="col-md-8 order-md-1">
+				<h4 class="mb-3">Adresse de livraison</h4>
+				<form id="CheckoutValidation" class="checkout-validation" method="post" action="{{ path('commande_paiement_step', {'number': 2}) }}">
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label for="firstName">Prenom</label>
+							<input type="text" class="form-control" name="form[firstName]" id="FirstName" placeholder="" value="{{ app.user.prenom }}" required="">
+							<div class="invalid-feedback">
+								Un prénom valide est requis.
+							</div>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label for="lastName">Nom</label>
+							<input type="text" class="form-control" name="form[lastName]" id="LastName" placeholder="" value="{{ app.user.nom }}" required="">
+							<div class="invalid-feedback">
+								Un nom valide est requis.
+							</div>
+						</div>
+					</div>
+
+					{#<div class="mb-3">
+						<label for="username">Username</label>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text">@</span>
+							</div>
+							<input type="text" class="form-control" id="username" placeholder="Username" required="">
+							<div class="invalid-feedback" style="width: 100%;">
+								Your username is required.
+							</div>
+						</div>
+					</div>#}
+
+					<div class="mb-3">
+						<label for="email">Email <span class="text-muted">(Recommandé)</span></label>
+						<input type="email" class="form-control" name="form[email]" id="Email" value="{{ app.user.courriel }}" placeholder="you@example.com">
+						<div class="invalid-feedback">
+							Veuillez entrer une adresse électronique valide pour l'envoi des mises à jour.
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="address">Address</label>
+						<input type="text" class="form-control" name="form[address]" id="Address" value="{{ resider ? resider.idAdresse.adr : '' }}" placeholder="1234 Main St" required="" >
+						<div class="invalid-feedback">
+							Veuillez indiquer votre adresse de livraison.
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="Compl">Complémentaire<span class="text-muted">(Optional)</span></label>
+						<input type="text" class="form-control" name="form[compl]" id="Compl" value="{{ resider ? resider.idAdresse.compl : '' }}" placeholder="Bat. ou Apprt.">
+					</div>
+
+					<div class="row">
+						<div class="col-md-5 mb-3">
+							<label for="Country">Pays</label>
+							<select class="custom-select d-block w-100" name="form[country]" id="Country" required="">
+								<option value="">Choisisez...</option>
+
+							</select>
+							<div class="invalid-feedback">
+								Veuillez sélectionner un pays valide.
+							</div>
+						</div>
+
+						<div class="col-md-4 mb-3">
+							<label for="State">Ville</label>
+							<select class="custom-select d-block w-100" name="form[state]" id="State" required="">
+								<option value="">Choisisez...</option>
+								<option selected value="{{ resider ? resider.idAdresse.idVille.libelle : '' }}">{{ resider ? resider.idAdresse.idVille.libelle : '' }}</option>
+							</select>
+							<div class="invalid-feedback">
+								Veuillez fournir un état valide.
+							</div>
+						</div>
+
+						<div class="col-md-3 mb-3">
+							<label for="Zip">Code Postal</label>
+							<input type="text" class="form-control" value="{{ resider ? resider.idAdresse.idVille.codePostal : '' }}" name="form[zip]" id="Zip" placeholder="" required="">
+							<div class="invalid-feedback">
+								Le code postal est requis.
+							</div>
+						</div>
+					</div>
+					<hr class="mb-4">
+					<div class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" name="form[sameAddress]" id="SameAddress">
+						<label class="custom-control-label" for="same-address">L'adresse de livraison est la même que mon adresse de facturation</label>
+					</div>
+					<div class="custom-control custom-checkbox">
+						<input type="checkbox" class="custom-control-input" name="form[saveInfo]" id="Save-Info">
+						<label class="custom-control-label" for="save-info">Conservez ces informations pour la prochaine fois</label>
+					</div>
+
+					<hr class="mb-4">
+					<h4 class="mb-3">Date de livraison</h4>
+
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<div>
+								<div class="d-flex">
+									{{ form_label(form.dateShipping, "Date de livraison", { }) }} <div class="ml-2"><small class="badge d-inline-block" style="background-color: #ffc966;">Date d'aujourd'hui</small> </div>
+								</div>
+								{{ form_widget(form.dateShipping, { 'attr': { 'class': 'form-control' ~ ( form.dateShipping.vars['errors'] |length > 0 ? ' is-invalid' : '' ) ~ ( ' ' ~ form.dateShipping.vars['attr']['class'] )  } }) }}
+
+								<div class="invalid-feedback">
+									Veuillez indiquer une date de livraison.
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<hr class="mb-4">
+					<h4 class="mb-3">Paiement</h4>
+
+					<div class="d-block my-3">
+						<div class="custom-control custom-radio">
+							<input id="paypal" name="form[paymentMethod]" value="paypal" type="radio" class="custom-control-input" checked required="">
+							<label class="custom-control-label" for="paypal"><i class="fab fa-cc-paypal"></i> PayPal</label>
+						</div>
+						<div class="custom-control custom-radio">
+							{# TODO Désactiver pour l'instant #}
+							<input disabled id="credit" name="form[paymentMethod]" value="credit" type="radio" class="custom-control-input" required="">
+							<label class="custom-control-label" for="credit"><i class="fas fa-credit-card"></i> Carte de credit</label>
+						</div>
+						<div class="custom-control custom-radio">
+							{# TODO Désactiver pour l'instant #}
+							<input disabled id="debit" name="form[paymentMethod]" value="debit" type="radio" class="custom-control-input" required="">
+							<label class="custom-control-label" for="debit"><i class="fas fa-credit-card"></i> Carte de débit</label>
+						</div>
+					</div>
+					<div class="payment-features payment-features-debit payment-features-credit">
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="cc-name">Nom sur la carte</label>
+								<input type="text" class="cc-payment-input form-control" name="form[ccName]" id="CCName" placeholder="">
+								<small class="text-muted">Nom complet tel qu'il figure sur la carte</small>
+								<div class="invalid-feedback">
+									Le nom sur la carte est obligatoire
+								</div>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="cc-number">Numéro de la carte de crédit</label>
+								<input type="text" class="cc-payment-input form-control" name="form[ccNumber]" id="CCNumber" placeholder="">
+								<div class="invalid-feedback">
+									Le numéro de la carte de crédit est requis
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 mb-3">
+								<label for="cc-expiration">Expiration</label>
+								<input type="text" class="cc-payment-input form-control" name="form[ccExpiration]" id="CCExpiration" placeholder="">
+								<div class="invalid-feedback">
+									Date d'expiration requise
+								</div>
+							</div>
+							<div class="col-md-3 mb-3">
+								<label for="cc-cvv">CVV</label>
+								<input type="text" class="cc-payment-input form-control" name="form[ccCvv]" id="CCCvv" placeholder="">
+								<div class="invalid-feedback">
+									Code de sécurité requis
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="payment-features payment-features-paypal">
+						<small>Veuillez passer à l'étape suivante pour payer avec paypal.</small>
+					</div>
+					<hr class="mb-4">
+
+					<input type="hidden" name="_token" value="{{ csrf_token('commande.' ~ commande.id) }}">
+
+					<button class="btn btn-primary btn-lg btn-block" type="submit">Continuer le payment</button>
+				</form>
+			</div>
+		</div>
+
+		<footer class="my-5 pt-5 text-muted text-center text-small">
+			<p class="mb-1">{{ app_name }} © 2017-2019</p>
+			<ul class="list-inline">
+				<li class="list-inline-item"><a href="{{ path('home') }}">Home</a></li>
+			</ul>
+		</footer>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+
+	<script type="text/javascript">
+		$(document).ready((e) => {
+
+			$(`input[type="text"]`).on('click', (e) => {
+                e.target.defaultValue = e.currentTarget.value;
+			});
+
+            window.addEventListener('load', function () {
+                let forms = document.getElementsByClassName('checkout-validation');
+                Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false)
+                })
+            }, false);
+
+		    fetch("https://restcountries.eu/rest/v2/all", {
+		        method: 'GET',
+		    })
+			.then((res) => res.json ? res.json() : res[res.type]())
+			.then(countries => {
+                try {
+                    if (countries && Array.isArray(countries)) {
+                        let select = "{{ resider ? resider.idAdresse.idVille.pays : '' }}";
+						$("#Country").html(countries.map((value, key) => `<option ${select.toLowerCase().includes(value.name.toLowerCase()) ? 'selected' : ''} value="${value.name}" data-country="${value.name.toLowerCase()}" data-alpha2Code="${value.alpha2Code}">${value.name}</option>`).join("\n"))
+                    }
+                }catch (e) {
+                    window.logger.error('Oupss ! Error detect during get data countries', e)
+                }
+			});
+
+		    let residers = {{ residers|raw }};
+		    if (residers && Array.isArray(residers)) {
+		        $("#AdresseCount").html(residers.length);
+		        if (residers.length <= 0) {
+                    $("#AdresseList").html(
+                        `<div class="media text-muted pt-3">
+								<div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+									<div class="d-flex justify-content-between align-items-center w-100">
+										<strong class="text-gray-dark">Aucune adresse</strong>
+										<a href="{{ path('resider_new', {'utilisateur': app.user.id}) }}" class="btn btn-primary d-inline-block">
+											<i class="fas fa-link"></i>
+										</a>
+									</div>
+									<span class="d-block">ajouter une adresse</span>
+								</div>
+							</div>`);
+		        }else{
+		            $("#AdresseList").html(
+		                residers.map((resider) =>
+			                `<div class="media text-muted pt-3" id="AdresseSelect${resider.id}">
+								<div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+									<div class="d-flex justify-content-between align-items-center w-100">
+										<strong class="text-gray-dark">${resider.idAdresse.adr}, ${resider.idAdresse.compl}</strong>
+										<button class="btn adresse_selected_button" id="AdresseSelectButton${resider.id}" class="btn btn-primary d-inline-block">
+											${ resider && resider.id.toString() === "{{ resider ? resider.id : '' }}" ? '<i class="fas fa-check-square"></i>' : '<i class="fas fa-square"></i>' }
+										</button>
+									</div>
+									<span class="d-block">${ resider.idAdresse.idVille.libelle }, ${ resider.idAdresse.idVille.pays } | ${resider.idAdresse.idVille.codePostal}</span>
+								</div>
+							</div>`).join('\n')
+		            );
+
+		            for (let resider of residers) {
+		                $(`#AdresseSelect${resider.id}`).on('click', (e) => {
+		                    $('#Address').val(resider.idAdresse.adr);
+		                    $('#Compl').val(resider.idAdresse.compl);
+		                    $('#Zip').val(resider.idAdresse.idVille.codePostal);
+		                    //window.logger.log($('#Country').find(`option[value="${resider.va}"]`))
+                            $('#Country').find('option').attr("selected",false);
+                            $(`option[data-country="${resider.idAdresse.idVille.pays.toLowerCase()}"]`).attr('selected', true);
+
+                            $(`.adresse_selected_button`).html('<i class="fas fa-square"></i>');
+                            $(`#AdresseSelectButton${resider.id}`).html('<i class="fas fa-check-square"></i>');
+
+			                $("#State").find('option[selected]').html(resider.idAdresse.idVille.libelle);
+			                $("#State").find('option[selected]').val(resider.idAdresse.idVille.libelle);
+		                })
+		            }
+		        }
+		    }
+
+		    function bindFeaturesPayment() {
+                $('.payment-features').css({
+                    display: 'none'
+                });
+                $('input[name="form[paymentMethod]"]').each((key, value) => {
+                    if ($(value).prop('checked')) {
+                        $(`.payment-features-${$(value).val()}`).css({
+                            display: 'inherit'
+                        });
+                    }
+                });
+		    }
+		    $('input[name="form[paymentMethod]"]').each(bindFeaturesPayment);
+		    $('.custom-control-input').on('click', bindFeaturesPayment);
+
+
+		    function handleRadioPayment(e) {
+                if(e.currentTarget && ['credit', 'debit'].includes(e.currentTarget.value)) {
+                    return $('.cc-payment-input').attr('required', true);
+                }
+                return $('.cc-payment-input').attr('required', false);
+            }
+            $('input[name="form[paymentMethod]"]').each(handleRadioPayment);
+            $('input[name="form[paymentMethod]"]').on('change', handleRadioPayment);
+
+		})
+	</script>
+{% endblock %}

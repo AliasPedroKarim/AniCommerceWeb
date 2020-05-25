@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Resider index{% endblock %}
+
+{% block body %}
+    <h1>Vos adresses</h1>
+
+    <a class="btn btn-success" href="{{ path('resider_new', { 'utilisateur': utilisateur.id }) }}">Create new</a>
+
+    <a class="btn btn-success mx-2" href="{{ app.request.headers.get('referer') ? app.request.headers.get('referer') : path('home') }}">Retour</a>
+
+    <table class="table my-2">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Defaut</th>
+                <th>Nom</th>
+                <th>Adresse</th>
+                <th>Complémentaire</th>
+                <th>Pays</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for resider in residers %}
+            <tr>
+                <td>{{ resider.id }}</td>
+                <td>{{ resider.defaut ? 'Yes' : 'No' }}</td>
+                <td>{{ resider.idAdresse.libelle }}</td>
+                <td>{{ resider.idAdresse.adr }}</td>
+                <td>{{ resider.idAdresse.compl }}</td>
+                <td>{{ resider.idAdresse.idVille.libelle ~ ', ' ~ resider.idAdresse.idVille.pays }}</td>
+                <td>
+                    <a href="{{ path('resider_show', {'utilisateur': utilisateur.id, 'resider': resider.id}) }}">show</a>
+                    <a href="{{ path('resider_edit', {'utilisateur': utilisateur.id, 'resider': resider.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    {{ include('layout/notify_script.html.twig') }}
+
+{% endblock %}

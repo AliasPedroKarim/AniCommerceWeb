@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande index{% endblock %}
+
+{% block body %}
+    <h1>Commande index</h1>
+
+    {% for flashMessage in app.session.flashbag.get('success') %}
+        <div class="alert alert-success" role="alert">
+            {{ flashMessage|raw }}
+        </div>
+    {% endfor %}
+    {% for flashMessage in app.session.flashbag.get('danger') %}
+        <div class="alert alert-danger" role="alert">
+            {{ flashMessage|raw }}
+        </div>
+    {% endfor %}
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>DateCde</th>
+                <th>DateLivraison</th>
+                <th>Facture</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.dateCde ? commande.dateCde|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ commande.dateLivraison ? commande.dateLivraison|date('Y-m-d') : '' }}</td>
+                <td><a href="{{ path('commande_facture', { 'id': commande.id }) }}"><i style="font-size: 2.0em;" class="fas fa-file-pdf"></i></a></td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block section_admin %} Modifer Magasin - {{ magasin.nom }} | {{ parent() }} {% endblock %}
+
+{% block page_content %}
+    {# Page Heading #}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Magasin</h1>
+            <p class="mb-4">Modifier le magasin <b>{{ magasin.nom }}</b> à votre guise.</p>
+        </div>
+    </div>
+
+    {{ include('admin/magasin/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {{ include('admin/magasin/_scripts.html.twig') }}
+
+{% endblock %}

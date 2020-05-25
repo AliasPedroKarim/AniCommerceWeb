@@ -1,0 +1,108 @@
+{{ form_start(form, { 'attr': { 'id': 'NeedsValidationMagasin' } }) }}
+    <div class="card shadow-3dp mb-4 border-bottom-primary">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Magasin</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 col-lg-8">
+                    <div class="form-group">
+                        <div class="col mb-1">
+                            {{ form_label(form.nom, "Nom du Magasin", { }) }}
+                            {{ form_widget(form.nom, { 'attr': { 'class': 'form-control' ~ ( form.nom.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.nom) is not empty ? form_errors(form.nom) : "Veuillez saisir votre adresse !" }}
+                            </div>
+                        </div>
+                        <div class="col mb-1">
+                            {{ form_label(form.telephone, "N° Tel", { }) }}
+                            {{ form_widget(form.telephone, { 'attr': { 'class': 'form-control' ~ ( form.telephone.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.telephone) is not empty ? form_errors(form.telephone) : "Veuillez saisir votre adresse !" }}
+                            </div>
+                        </div>
+                        <div class="col mb-1">
+                            {{ form_label(form.courriel, "Email", { }) }}
+
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroupPrependEmail">@</span>
+                                </div>
+                                {{ form_widget(form.courriel, { 'attr': { 'class': 'form-control ' ~ (form.courriel.vars['errors'] |length > 0 ? 'is-invalid' : ''), 'aria-describedby': 'inputGroupPrependEmail' } }) }}
+
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.courriel) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col mb-1">
+                            {{ form_label(form.latitude, "Latitude", { }) }}
+                            {{ form_widget(form.latitude, { 'attr': { 'class': 'form-control' ~ ( form.latitude.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.latitude) is not empty ? form_errors(form.latitude) : "" }}
+                            </div>
+                        </div>
+                        <div class="col mb-1">
+                            {{ form_label(form.longitude, "Longitude", { }) }}
+                            {{ form_widget(form.longitude, { 'attr': { 'class': 'form-control' ~ ( form.longitude.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.longitude) is not empty ? form_errors(form.longitude) : "" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form_widget(form) }}
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    {{ include('image/_form.html.twig', { 'form': form_image, 'multi': true }) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-3dp mb-4 border-bottom-danger">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Horaires</h6>
+        </div>
+        <div class="card-body">
+            {{ include('horaire_magasin/_form.html.twig', { 'form': form_horaire, 'multi': true }) }}
+
+            <div class="form-group">
+
+                <div class="d-flex align-items-center justify-content-end mt-4">
+                    <div id="SpinnerHoraire">
+                        {#<div class="spinner-border text-primary" role="status">
+							<span class="sr-only">Loading...</span>
+						</div>#}
+                    </div>
+                    <a id="AddHours" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm ml-2">
+                        <i class="fas fa-clock fa-sm text-white-50"></i> Ajouter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-3dp mb-4 border-bottom-warning">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Addresse</h6>
+        </div>
+        <div class="card-body">
+            {{ include('adresse/_form.html.twig', { 'form': form_adresse, 'multi': true }) }}
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-4">
+        <a type="button" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm" href="{{ path('admin_magasin_index') }}">
+            <i class="fas fa-cross fa-sm text-white-50"></i> Retour
+        </a>
+        <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-cross fa-sm text-white-50"></i> {{ button_label|default('Creer') }}
+        </button>
+    </div>
+
+{{ form_end(form) }}

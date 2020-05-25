@@ -1,0 +1,28 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block section_admin %} Modifer Produit - {{ produit.libelle }} | {{ parent() }} {% endblock %}
+
+{% block page_content %}
+    {# Page Heading #}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Produit</h1>
+            <p class="mb-4">Modifier le produit <small>{{ produit.libelle }}</small> à votre guise.</p>
+        </div>
+    </div>
+
+    {{ include('admin/produit/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+
+    <div class="d-sm-flex align-items-center justify-content-start mb-4">
+        <a href="{{ path('admin_produit_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-arrow-alt-circle-left fa-sm text-white-50"></i> Retout
+        </a>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+
+	{{ include('admin/produit/_scripts.html.twig') }}
+
+{% endblock %}

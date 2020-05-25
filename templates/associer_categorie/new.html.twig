@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New AssocierCategorie{% endblock %}
+
+{% block body %}
+    <h1>Create new AssocierCategorie</h1>
+
+    {{ include('associer_categorie/_form.html.twig') }}
+
+    <a href="{{ path('associer_categorie_index') }}">back to list</a>
+{% endblock %}

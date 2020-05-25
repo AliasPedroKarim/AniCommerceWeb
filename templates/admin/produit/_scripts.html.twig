@@ -1,0 +1,177 @@
+<script type="text/javascript">
+    $(document).ready(() => {
+		{% for flashMessage in app.session.flashbag.get('success') %}
+            window.helpers.pingAlertTemporary(null, { elevate: true, message: "{{ flashMessage|raw }}", type: 'success' });
+		{% endfor %}
+		{% for flashMessage in app.session.flashbag.get('danger') %}
+            window.helpers.pingAlertTemporary(null, { elevate: true, message: "{{ flashMessage|raw }}", type: 'danger' });
+		{% endfor %}
+    });
+</script>
+
+<script type="text/javascript">
+
+	$(document).ready(() => {
+        $('#FileImage').bind("change paste keyup", function(e) {
+            if (this.files.length > 0) {
+                window.showImage(e, window.URL.createObjectURL(this.files[0]), true, $('#PreviewImage'));
+            }
+        });
+
+        $('#image_cheminImage').bind("change paste keyup", function(e) {
+            let url = $(e.target).val();
+            if (!window.isEmpty(url) && window.helpers.isUrl(url)) {
+                window.showImage(e, url, false, $('#PreviewImage'));
+            }
+        });
+
+        $('#image_cheminImage').focusout(function(e) {
+            if ($(e.target).val() !== "" && !window.helpers.isUrl($(e.target).val())) {
+                return window.helpers.pingAlertTemporary(null, { elevate: true, message: "Oups ! Votre URL est invalide...", type: 'danger' });
+            }
+        });
+
+        // Validation formulaire
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        let forms = document.getElementById('NeedsValidationProduit');
+        // Loop over them and prevent submission
+        let validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+
+	});
+
+</script>
+<script type="text/javascript">
+    $(document).ready((e) => {
+        let defaultImage = '{{ produit_image_default }}';
+
+        var images = {
+	        {% if produit is defined and produit.images is not empty %}
+			    {% for image in produit.images.toArray %}
+					["{{ image.id }}"]: {
+					    id_produit: "{{ produit.id }}",
+                        image: "{{ image.idImage.cheminImage }}",
+                        description: "{{ image.idImage.description }}",
+                        _token: "{{ form_image is defined ? form_image.children['_token'].vars['value'] : '' }}",
+					},
+			    {% endfor %}
+	        {% endif %}
+        };
+
+        let cred_image = {
+	        {% if produit is defined and produit.images is not empty %}
+		        {% for image in produit.images.toArray %}
+		            ["{{ image.id }}"]: {
+		                c: "{{ csrf_token('delete' ~ image.id) }}",
+		                d: "{{ path('image_delete', {'id': image.id}) }}",
+		                e: "{{ path('image_edit', {'id': image.id}) }}"
+		            },
+			    {% endfor %}
+	        {% endif %}
+        };
+
+        let payloadImages = $('#PayloadImages');
+        if (payloadImages.length > 0) {
+            function buildListImages() {
+                let text = '';
+                if (!window.isEmpty(images)) {
+                    for (let image in images) {
+                        text += `
+	                    <div class="d-block mr-1 mb-1">
+							<div data-id="${image}" class="rounded-sm mr-md-2" style="background: url('${images[image].image}');background-size: cover;position: relative;width: 50px;height: 50px;">
+								<div style="position: absolute;top: 0px;right: 0px;" data-id="${image}" class="${!window.isEmpty(images[image].id_produit) ? 'dismiss-image-exist' : 'dismiss-image'}" >
+									<i class="fas fa-minus-square fa-sm fa-fw text-gray-400"></i>
+								</div>
+							</div>
+							<div>
+								${window.isEmpty(images[image].id_produit) ? '<small class="badge badge-danger">Nouvel</small>' : ''}
+							</div>
+
+							${!window.isEmpty(images[image].id_produit) ? `<input type="hidden" name="images[${image}][id_produit]" value="${images[image].id_produit}">` : ''}
+							<input type="hidden" name="images[${image}][image]" value="${images[image].image}">
+							<input type="hidden" name="images[${image}][description]" value="${images[image].description}">
+							<input type="hidden" name="images[${image}][_token]" value="${images[image]._token}">
+						</div>
+                    	`;
+                    }
+                }
+
+                payloadImages.html(text);
+            }
+
+            // INIT
+            buildListImages();
+
+            $('#AddImages').on('click', () => {
+
+                let image = $('#image_cheminImage').val();
+                let description = $('#image_description').val();
+                let _token = $('#image__token').val();
+
+                if (!window.isEmpty(image)) {
+                    $('#image_cheminImage').removeClass('is-invalid');
+                    let id = window.helpers.getRandomInt(9999999);
+                    images[id] = {
+                        id,
+                        image: image,
+                        description,
+                        _token
+                    };
+                    buildListImages();
+
+                    $('#image_cheminImage').val('');
+                    $('#image_description').val('');
+                    window.showImage(null, defaultImage, false);
+                }else{
+                    $('#image_cheminImage').addClass('is-invalid');
+                }
+
+            });
+
+            $('#PayloadImages').on('click', '.dismiss-image', function(e) {
+                let id = $(this).data('id');
+
+                if (!isNaN(parseInt(id)) && !window.isEmpty(images[id])) {
+                    delete images[id];
+                    buildListImages();
+                }
+            });
+
+            $('#AdminWrapper').on('click', '.dismiss-image-exist', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (confirm('Are you sure you want to delete this item?')) {
+                    let id = $(this).data('id');
+
+                    let form = document.createElement('form');
+                    form.setAttribute('name', 'delete_image');
+                    form.setAttribute('action', cred_image[id].d);
+                    form.setAttribute('method', 'post');
+
+                    for (let iInfo of [
+                        { key: '_method', value: 'DELETE' },
+	                    { key: '_token', value: cred_image[id].c },
+	                    { key: 'action', value: 'produit_edit' },
+	                    { key: 'idProduit', value: images[id].id_produit }
+                    ]) {
+                        let input = document.createElement('input');
+                        input.setAttribute('name', iInfo.key);
+                        input.setAttribute('value', iInfo.value);
+                        form.append(input);
+                    }
+                    $('#PayloadFormImages').append(form);
+
+                    document.forms['delete_image'].submit();
+                }
+            });
+        }
+    });
+</script>

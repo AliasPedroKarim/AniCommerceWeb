@@ -1,0 +1,112 @@
+App\Entity\Utilisateur:
+  constraints:
+    - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields: [courriel]
+        message: "Cet email a déjà utiliser."
+        groups: [Default]
+  
+  properties:
+    nom:
+      - NotBlank:
+          message: "Veuillez saisir votre nom !"
+          groups: [Default]
+          
+    prenom:
+      - NotBlank:
+          message: "Veuillez saisir votre prenom !"
+          groups: [Default]
+          
+    courriel:
+      - NotBlank:
+          message: "Veuillez saisir votre email !"
+          groups: [Register]
+          
+      - Email:
+          message: "L'email {{ value }} est invalide."
+          groups: [Default]
+          
+    telephone:
+      - NotBlank:
+          message: "Veuillez saisir votre numéro de téléphone !"
+          groups: [Register]
+          
+    dateNaissance:
+      - NotBlank:
+          message: "Veuillez saisir votre date de naissance !"
+          groups: [Register]
+          
+    motDePasse:
+      - NotBlank:
+          message: "Veuillez saisir un mot de passe !"
+          groups: [Register]
+          
+    checkPassword:
+      - NotBlank:
+          message: "Veuillez saisir un mot de passe !"
+          groups: [Register]
+          
+      - EqualTo:
+          message: "Attention ! Vos mot de passe ne se correspond pas !"
+          propertyPath: motDePasse
+          
+      #- Symfony\Component\Security\Core\Validator\Constraints\UserPassword:
+      #    message: "Cette valeur doit être le mot de passe actuel de l'utilisateur."
+      #    groups: [Default]
+      
+    idGenre:
+      - NotBlank:
+          message: "Veuillez selectionné un genre !"
+          groups: [Register]
+  
+App\Entity\Resider:
+
+App\Entity\Adresse:
+  libelle:
+  
+  adr:
+    - NotBlank:
+        message: "Veuillez s'il vous plait ecrire votre adresse !"
+        groups: [Default]
+        
+  compl:
+  
+  idVille:
+    - NotBlank:
+        message: Veuillez renseigner votre ville !
+
+App\Entity\Magasin:
+  nom:
+    - NotBlank:
+        message: "Veuillez s'il vous plait saisir le nom du magasin !"
+        groups: [Default]
+        
+  telephone:
+    - NotBlank:
+        message: "Veuillez s'il vous plait saisir le nom du magasin !"
+        groups: [Default]
+        
+  courriel:
+    - NotBlank:
+        message: "Veuillez s'il vous plait "
+        groups: [Default]
+        
+    - Email:
+        message: "L'email {{ value }} est invalide."
+        groups: [Default]
+        
+  latitude:
+  
+  longitude:
+  
+App\Entity\Image:
+  description:
+    - Lenght:
+        max: 100
+        maxMessage: "Cette valeur est trop longue ({{ value }}). Elle doit comporter {{limite }} caractères ou moins."
+        payload: "Image de magasin"
+        charsetMessage: "Cette valeur ne correspond pas au jeu de caractères {{charset}} attendu."
+
+  cheminImage:
+    - Url:
+        message: "Attention ! L'URL que vous avez envoyé est incorrect."
+        relativeProtocole: true

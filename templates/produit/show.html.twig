@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ produit.libelle }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="d-flex flex-column">
+                    <div class="mb-3" id="PreviewImageProduit">
+                        {% if  produit.images.empty != true %}
+                            <img src="{{ produit.images.get(0).idImage.cheminImage }}" style="width: 100%;height: 100%;" alt="#">
+                        {% else %}
+                            <img src="{{ produit_image_default }}" style="width: 100%;height: 100%;" alt="one piece illustration">
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-center justify-content-md-start">
+                        {% for image in produit.images %}
+                            <div data-id="{{ image.idImage.id }}" class="bg-dark rounded-sm mr-md-2 m-1 image-produit" style="
+                                width: 40px;
+                                height: 40px;
+                                background: url('{{ image.idImage.cheminImage }}') no-repeat top center;
+                                background-size: cover;
+                            "></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div data-id="{{ produit.id }}" class="col-lg-8 d-flex flex-column">
+
+                <div class="flex-grow-1">
+                    <div>
+                        <h4>{{ produit.libelle }}</h4>
+                        <small>par <a href="{{ path('magasin_show', { 'id': produit.idMagasin.id }) }}">{{ produit.idMagasin.nom }}</a></small>
+                        <div>
+                            {{ produit.stock and produit.stock > 0 ? '<div class="text-success">En stock</div>' : '<div class="text-danger">Pas de stock</div>' }}
+                        </div>
+                    </div>
+                    <hr class="mb-2">
+                    <div>
+                        <h5 class="mt-4">Prix</h5>
+                        {{ produit.prixHt }}
+                    </div>
+
+                    <div>
+                        <h5 class="mt-4">Description</h5>
+                        <p>
+                            {{ produit.description }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <h5 class="mt-4">Catégorie</h5>
+                        {{ produit.associerCategories.values|map(ac => "<small class=\"text-white mx-2 badge\" style=\"background-color: #{ac.idCategorie.color};\">#{ac.idCategorie.libelle}</small>")|join('')|raw }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-md-end justify-content-sm-center">
+                    <a href="{{ path('produit_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm ml-md-2 mx-sm-2">
+                        <i class="fas fa-chevron-left fa-sm text-white-50"></i> Retour
+                    </a>
+                    <a href="{{ path('ligne_commande_new', {'produit': produit.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm ml-md-2 mx-sm-2">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    {{ include('layout/notify_script.html.twig') }}
+
+    <script type="text/javascript">
+        $(document).ready((e) => {
+            let produit = {{ _produits|raw }};
+
+            $('body').on('click', '.image-produit', function (e) {
+                let id = $(this).data('id');
+
+                if (!window.isEmpty(id)) {
+                    let link = produit.images.find((c) => c.idImage.id === id);
+
+                    if (!window.isEmpty(link)) {
+                        $('#PreviewImageProduit').html(`
+                        <img
+                            src="${link.idImage.cheminImage}" style="width: 100%;height: 100%;"
+                            alt="">
+                    `);
+                    }
+                }
+
+            });
+        });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiment Etape 2 - {{ parent() }}{% endblock %}
+
+{% block body %}
+
+	<div class="container">
+		<div class="py-5 text-center">
+			<img class="d-block mx-auto mb-4" src="{{ asset('favicon.gif') }}" alt="" width="72" height="72">
+			<h2>Récapitulatif de votre commande</h2>
+			<p class="lead">
+				Si une information vous semble incorrect vous pouvez revenir en arrière !
+			</p>
+		</div>
+
+		<div class="row d-flex justify-content-center">
+			<h4 class="mb-5">Informations de livraison</h4>
+			<div class="col-12">
+				<table class="table">
+					<tbody>
+					<tr>
+						<th scope="row">Nom/Prenom</th>
+						<td>{{ old_data['lastName']|upper }} {{ old_data['firstName'] }}</td>
+					</tr>
+					<tr>
+						<th scope="row">Email de livraison</th>
+						<td>{{ old_data['email'] }}</td>
+					</tr>
+					<tr>
+						{# TODO Voire après pour cet 2 attributes | sameAddress saveInfo #}
+						<th scope="row">Address</th>
+						<td>
+							{{ old_data['address'] }}, {{ old_data['compl'] }}<br>
+							{{ old_data['country'] }}, {{ old_data['state'] }} {{ old_data['zip'] }}
+						</td>
+					</tr>
+
+					<tr>
+						<th scope="row">Methode de paiement</th>
+						<td>{{ old_data['paymentMethod'] == 'paypal' ? '<i class="fab fa-cc-paypal"></i>' : '<i class="fas fa-credit-card"></i>'  }} {{ old_data['paymentMethod']|capitalize }}</td>
+					</tr>
+
+					{# TODO Pour le methode de paiement (debit/credit) | ccName ccNumber ccExpiration ccCvv #}
+
+					</tbody>
+				</table>
+			</div>
+
+			<hr class="mb-4">
+
+			<h4 class="mb-5 mt-5">Listes de produits</h4>
+
+			<div class="col-md-12">
+
+				<table class="table">
+					<thead>
+					<tr>
+						<th scope="col">N° Produit</th>
+						<th scope="col">Nom produit</th>
+						<th scope="col">Quantité</th>
+						<th scope="col">Prix</th>
+						<th scope="col">Prix Total</th>
+					</tr>
+					</thead>
+					<tbody>
+						{% set total_prix_commande = 0 %}
+
+						{% for ligne_commande in ligne_commandes %}
+							{% set total_prix_commande = total_prix_commande + (ligne_commande.prixUnitaire * ligne_commande.quantite) %}
+							<tr>
+								<th scope="row">{{ ligne_commande.idProduit.id }}</th>
+								<td>{{ ligne_commande.idProduit.libelle }}</td>
+								<td>{{ ligne_commande.quantite }}</td>
+								<td>{{ ligne_commande.prixUnitaire }} €</td>
+								<td>{{ ligne_commande.prixUnitaire * ligne_commande.quantite }} €</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+					<tfoot>
+					<tr>
+						<th align="left" colspan="4">Total</th>
+						<td align="left" class="gray">{{ total_prix_commande }} €</td>
+					</tr>
+					</tfoot>
+				</table>
+
+			</div>
+
+			<hr class="mb-4">
+
+			<div class="col-md-12 d-flex justify-content-center">
+				<a class="btn btn-primary btn-md btn-block w-25 mr-1" href="{{ path('commande_paiement_step', {'number': 1}) }}">Retour</a>
+				<form class="w-25 ml-1" method="post" action="{{ path('commande_paiement_step', {'number': 3}) }}">
+					<div class="d-none">
+						{{ form_widget(form) }}
+					</div>
+					<button class="btn btn-primary btn-md btn-block w-100" type="submit">Pocéder au paiment</button>
+				</form>
+			</div>
+		</div>
+
+	</div>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+<script type="text/javascript">
+    // Handle flagbag
+    $(document).ready(function (e) {
+	    {% for state in ['warning', 'success', 'danger'] %}
+		    {% for flashMessage in app.session.flashbag.get(state) %}
+	            window.helpers.pingAlertTemporary(null, { elevate: true, message: `{{ flashMessage|raw }}`, type: "{{state}}" });
+		    {% endfor %}
+	    {% endfor %}
+    });
+</script>

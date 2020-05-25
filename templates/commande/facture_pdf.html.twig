@@ -1,0 +1,124 @@
+{% extends "layout/base_pdf.html.twig" %}
+
+{% block title %}Facture de la commande N°{{ 'number' }}{% endblock %}
+
+{% block styles %}
+	<style type="text/css">
+		@page {
+			margin: 0px;
+		}
+		body {
+			margin: 0px;
+		}
+		* {
+			font-family: Verdana, Arial, sans-serif;
+		}
+		a {
+			color: #fff;
+			text-decoration: none;
+		}
+		table {
+			font-size: x-small;
+		}
+		tfoot tr td {
+			font-weight: bold;
+			font-size: x-small;
+		}
+		.invoice table {
+			margin: 15px;
+		}
+		.invoice h3 {
+			margin-left: 15px;
+		}
+		.information {
+			background-color: #60A7A6;
+			color: #FFF;
+		}
+		.information .logo {
+			margin: 5px;
+		}
+		.information table {
+			padding: 10px;
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div class="information">
+		<table width="100%">
+			<tr>
+				<td align="left" style="width: 40%;">
+					<h3>{{ historyCommand.idCommand.idUtilisateur.nom|upper }} {{ historyCommand.idCommand.idUtilisateur.prenom }}</h3>
+
+					PAYER ADRESSE HERE
+					<br /><br />
+					Date de commande : {{ historyCommand.idCommand.dateCde|date('d-m-Y') }}
+					Identification de la commande : {{ historyCommand.idCommand.id }}
+					Mothode de paiement : {{ historyCommand.idCommand.id }}
+					Status : {{ historyCommand.activity ? "Fini" : "Pas fini" }}
+				</td>
+				<td align="center">
+					<img src="{{ asset('favicon.png') }}" alt="Logo" width="64" class="logo"/>
+				</td>
+				<td align="right" style="width: 40%;">
+
+					<h3>{{ app_name }}</h3>
+					<pre>
+	                    {{ url('home') }}
+
+	                    HERE ADDRESSE
+	                </pre>
+				</td>
+			</tr>
+
+		</table>
+	</div>
+
+	<br/>
+
+	<div class="invoice">
+		<h3>Invoice specification #123</h3>
+		<table width="100%">
+			<thead>
+				<tr>
+					<th>Nom du produit</th>
+					<th>Prix à l'unité</th>
+					<th>Prix Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% set total_prix_commande = 0 %}
+				{% for ligneCommande in ligneCommandes %}
+					{% set total_prix_commande = total_prix_commande + (ligneCommande.prixUnitaire * ligneCommande.quantite) %}
+					<tr>
+						<td>{{ ligneCommande.idProduit.libelle }}</td>
+						<td>{{ ligneCommande.quantite }}</td>
+						<td align="left">{{ ligneCommande.prixUnitaire * ligneCommande.quantite }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+
+			<tfoot>
+				<tr>
+					<td></td>
+					<td align="left">Total</td>
+					<td align="left" class="gray">{{ total_prix_commande }}</td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+
+	<div class="information" style="position: absolute; bottom: 0;">
+		<table width="100%">
+			<tr>
+				<td align="left" style="width: 50%;">
+					&copy; {{ "now"|date("Y") }} <a href="{{ url('home') }}">{{ app_name }}</a> - All rights reserved.
+				</td>
+				<td align="right" style="width: 50%;">
+					{{ app_name }}
+				</td>
+			</tr>
+
+		</table>
+	</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produits du jour - {{ parent() }}{% endblock %}
+
+{% block body %}
+
+    <div class="container">
+
+        {% include 'produit/_form_filter.html.twig' %}
+
+        <h1 class="my-3">Produit du jour</h1>
+
+        {{ include('produit/liste_produit.html.twig') }}
+
+        <div class="count">
+            {#{{ produits.getTotalItemCount }}#}
+        </div>
+
+        {# display navigation #}
+        <div class="navigation d-flex justify-content-center">
+            {{ knp_pagination_render(produits) }}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {{ include('produit/_scripts.html.twig') }}
+
+{% endblock %}

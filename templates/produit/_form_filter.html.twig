@@ -1,0 +1,62 @@
+<div class="dropdown d-flex justify-content-end">
+	<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuFilter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		Filtre des produits
+
+		{{ app.session.get('__filters_produits') is empty ? '<small class="badge badge-danger">Désactivé</small>' : '<small class="badge badge-info">Activé</small>' }}
+	</button>
+	<div class="dropdown-menu p-3 dropdown-menu-right shadow-3dp" aria-labelledby="dropdownMenuFilter">
+		{% if form %}
+
+			{{ form_start(form) }}
+				<div class="form-group">
+					<div class="form-row d-flex justify-content-around">
+						<div class="col-4 mb-3">
+							{{ form_label(form.wordKeys, "Mots clés", { }) }}
+							{{ form_widget(form.wordKeys, { 'attr': { 'class': 'form-control' ~ (form.wordKeys.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+
+							<div class="invalid-feedback">
+								{{ form_errors(form.wordKeys) }}
+							</div>
+						</div>
+
+						<div class="mb-3">
+							{{ form_label(form.priceMin, "Prix minimal", { }) }}
+							{{ form_widget(form.priceMin, { 'attr': { 'class': 'form-control' ~ (form.priceMin.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+
+							<div class="invalid-feedback">
+								{{ form_errors(form.priceMin) }}
+							</div>
+						</div>
+						<div class="mb-3">
+							{{ form_label(form.priceMax, "Prix maximal", { }) }}
+							{{ form_widget(form.priceMax, { 'attr': { 'class': 'form-control' ~ (form.priceMax.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+
+							<div class="invalid-feedback">
+								{{ form_errors(form.priceMax) }}
+							</div>
+						</div>
+
+						<div class="col-md-12 mb-3 d-flex flex-lg-row flex-sm-column justify-content-around">
+							{% if form.categories.children %}
+								{% for categorie in form.categories.children %}
+									<div class="custom-control custom-checkbox mb-3 mr-3">
+										{{ form_widget(categorie, { 'attr': { 'class': 'custom-control-input' ~ (categorie.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+										{{ form_label(categorie, categorie.vars['label'], { 'label_attr': { 'class': 'custom-control-label' } }) }}
+
+										<div class="invalid-feedback">
+											{{ form_errors(categorie) }}
+										</div>
+									</div>
+								{% endfor %}
+							{% endif %}
+						</div>
+
+					</div>
+				</div>
+				<button class="btn btn-info">{{ button_label|default('Filtre') }}</button>
+				<a href="{{ path('produit_filter_clear') }}" class="btn btn-danger">{{ button_label|default('Clear') }}</a>
+			{{ form_end(form) }}
+
+		{% endif %}
+	</div>
+</div>

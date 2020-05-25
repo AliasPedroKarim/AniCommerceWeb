@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Magasin {{ magasin.nom }} - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <section class="jumbotron text-center bg-white"
+    {% if magasin.idImage is not empty and magasin.idImage.cheminImage is not empty %}
+
+        style="background: url('{{ magasin.idImage.cheminImage }}') no-repeat center;background-size: cover;"
+
+    {% endif %}
+    >
+        <div class="container">
+            <h1>{{ magasin.nom }}</h1>
+            <p class="lead text-dark">
+                {{ magasin.idAdresse.adr }} {{ magasin.idAdresse.compl }}, {{ magasin.idAdresse.idVille.pays }}
+            </p>
+            <p>
+                <a href="#" class="btn btn-primary my-2">
+                    Contacter
+                </a>
+            </p>
+        </div>
+    </section>
+
+    <div class="album py-5">
+        <div class="container">
+            {{ include('produit/liste_produit.html.twig') }}
+        </div>
+
+        <div class="navigation d-flex justify-content-center">
+            {{ knp_pagination_render(produits) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    {{ include('layout/notify_script.html.twig') }}
+    {{ include('produit/_scripts.html.twig') }}
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - {{ parent() }}{% endblock %}
+
+{% block javascripts_head %}
+    {{ parent() }}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_key_web }}" async defer></script>
+
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <h1 class="mb-3">Inscription</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-10">
+                {{ include('utilisateur/_form.html.twig', {'button_label': 'S\'enregistrer', 'action': 'register'}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function(){
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ recaptcha_key_web }}', {action: 'register'}).then(function(token) {
+                    $('#RecaptchaUtilisateur').val(token);
+                });
+            });
+        })
+    </script>
+{% endblock %}
+

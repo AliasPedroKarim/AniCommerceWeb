@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}HoraireMagasin index{% endblock %}
+
+{% block body %}
+    <h1>HoraireMagasin index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Jour</th>
+                <th>HOuvertureMatin</th>
+                <th>HFermetureMatin</th>
+                <th>HOuvertureMidi</th>
+                <th>HFermetureMidi</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for horaire_magasin in horaire_magasins %}
+            <tr>
+                <td>{{ horaire_magasin.id }}</td>
+                <td>{{ horaire_magasin.jour }}</td>
+                <td>{{ horaire_magasin.hOuvertureMatin ? horaire_magasin.hOuvertureMatin|date('H:i:s') : '' }}</td>
+                <td>{{ horaire_magasin.hFermetureMatin ? horaire_magasin.hFermetureMatin|date('H:i:s') : '' }}</td>
+                <td>{{ horaire_magasin.hOuvertureMidi ? horaire_magasin.hOuvertureMidi|date('H:i:s') : '' }}</td>
+                <td>{{ horaire_magasin.hFermetureMidi ? horaire_magasin.hFermetureMidi|date('H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('horaire_magasin_show', {'id': horaire_magasin.id}) }}">show</a>
+                    <a href="{{ path('horaire_magasin_edit', {'id': horaire_magasin.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('horaire_magasin_new') }}">Create new</a>
+{% endblock %}

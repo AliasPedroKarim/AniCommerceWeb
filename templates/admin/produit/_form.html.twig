@@ -1,0 +1,119 @@
+{{ form_start(form, { 'attr': { 'id': 'NeedsValidationProduit' } }) }}
+    <div class="card shadow-3dp mb-4 border-bottom-primary">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Produit</h6>
+        </div>
+        <div class="card-body">
+            <div class="col-md-6 col-lg-8">
+                <div class="mb-3">
+                    {{ form_label(form.libelle, "Nom", { }) }}
+                    {{ form_widget(form.libelle, { 'attr': { 'class': 'form-control' ~ (form.libelle.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+
+                    <div class="invalid-feedback">
+                        {{ form_errors(form.libelle) }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.description, "Description", { }) }}
+                    {{ form_widget(form.description, { 'attr': { 'class': 'form-control' ~ (form.description.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+
+                    <div class="invalid-feedback">
+                        {{ form_errors(form.description) }}
+                    </div>
+                </div>
+
+                <div class="form-row mb-3">
+                    <div class="col d-inline-block my-2 my-md-0 navbar-search">
+                        {{ form_label(form.prixHt, "Prix Hors Taxe", { }) }}
+                        <div class="input-group">
+                            {{ form_widget(form.prixHt, { 'attr': { 'class': 'form-control bg-light border-0 small' ~ (form.prixHt.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-euro-sign fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.prixHt) }}
+                        </div>
+                    </div>
+                    <div class="col d-inline-block my-2 my-md-0 navbar-search">
+                        {{ form_label(form.stock, "Stock", { }) }}
+                        <div class="input-group">
+                            {{ form_widget(form.stock, { 'attr': { 'class': 'form-control bg-light border-0 small' ~ (form.stock.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-store fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.stock) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-inline-block mb-3 navbar-search">
+                    {{ form_label(form.idMagasin, "Magasin", { }) }}
+                    <div class="input-group">
+                        <div class="input-group-append-left">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-store fa-sm"></i>
+                            </button>
+                        </div>
+                        {{ form_widget(form.idMagasin, { 'attr': { 'class': 'form-control bg-light border-0 small custom-select' ~ ( form.idMagasin.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+                    </div>
+                    <div class="invalid-feedback">
+                        {{ form_errors(form.idMagasin) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.associerCategories, "Catégories", { }) }}
+                    {{ form_widget(form.associerCategories, { 'attr': { 'class': 'form-control' ~ (form.associerCategories.vars['errors'] |length > 0 ? ' is-invalid' : '') } }) }}
+                    <small id="emailHelp" class="form-text text-muted">ctrl + clique sur l'élément pour en seletionné plusieurs</small>
+
+                    <div class="invalid-feedback">
+                        {{ form_errors(form.associerCategories) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card shadow-3dp mb-4 border-bottom-primary">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Images</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    {{ include('image/_form.html.twig', { 'form': form_image, 'multi': true }) }}
+                </div>
+                <div class="col-md-6 col-lg-8 mt-sm-2">
+                    <div class="d-flex flex-wrap" id="PayloadImages" style="max-height: 300px; overflow: auto;">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer d-flex align-items-center justify-content-end mt-4">
+            <a id="AddImages" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-image fa-sm text-white-50"></i> Ajouter
+            </a>
+        </div>
+    </div>
+
+<div class="d-none" id="PayloadFormImages">
+
+</div>
+
+    {{ form_widget(form) }}
+
+    <div class="d-flex align-items-center justify-content-end mt-4">
+        <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-wine-bottle fa-sm text-white-50"></i> {{ button_label|default('Ajouter') }}
+        </button>
+    </div>
+{{ form_end(form) }}

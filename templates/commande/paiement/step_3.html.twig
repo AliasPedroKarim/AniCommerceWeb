@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiment Etape 3 - {{ parent() }}{% endblock %}
+
+{% block body %}
+	<div class="container">
+		<div class="py-5 text-center">
+			<img class="d-block mx-auto mb-4" src="{{ asset('favicon.gif') }}" alt="" width="72" height="72">
+			<h2>Paiement par
+				{% if old_data.paymentMethod == 'paypal' %}
+					PayPal
+				{% endif %}
+			</h2>
+			<p class="lead">
+				Paiement
+			</p>
+		</div>
+
+		<div class="message">
+			{# Ici les messages temporaire #}
+		</div>
+
+		<div id="ButtonPayment" class="row d-flex justify-content-center text-center">
+			<div id="ButtonPaymentLoading" class="spinner-border text-info" role="status">
+				<span class="sr-only">Loading...</span>
+			</div>
+			{% if old_data.paymentMethod and old_data.paymentMethod == "paypal" %}
+				<div id="paypal-button-container"></div>
+			{% else %}
+				<div></div>
+			{% endif %}
+		</div>
+
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+
+	{% if old_data.paymentMethod == 'paypal' %}
+		<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&intent=authorize&currency=EUR"></script> {#intent=capture#}
+
+		<script>
+            $(document).ready((e) => {
+                fetch("{{ path('commande_paiement', {'method': old_data.paymentMethod}) }}", {
+                    method: "POST",
+	                headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+	                },
+	                body: JSON.stringify({{ old_data|json_encode()|raw }})
+                })
+                    .then(res => res.json ? res.json() : res[res.type]())
+                    .then(order => {
+                        if (order && order.id) {
+                            window.logger.log(order);
+                            $('#ButtonPaymentLoading').css({
+                                display: 'none'
+                            });
+                            if (order.status === "COMPLETED") {
+	                            $('#ButtonPayment').html(`
+	                                <div class="w-25 d-flex flex-column text-center">
+										<small class="mb-2">Votre commande est déjà payé !</small>
+										<a href="{{ path('commande_paiement_step', { 'number': 4 }) }}" class="btn btn-primary w-100">Continuer</a>
+									</div>
+	                            `);
+                                // location.pathname = "{{ path('commande_paiement_step', { 'number': 4 }) }}   ";
+                            } else {
+                                paypal.Buttons({
+                                    style: {
+                                        layout:  'vertical',
+                                        color:   'blue',
+                                        shape:   'rect',
+                                        label:   'paypal'
+                                    },
+                                    createOrder: (data, actions) => {
+                                        return order.id;
+                                    },
+
+                                    onAuthorize: (data, actions) => {
+                                        window.logger.log("transaction onAuthorize");
+
+
+                                        return actions.payment.execute().then(function(){
+                                            window.logger.log("transaction")
+                                        });
+                                    },
+                                    onApprove: function(data, actions) {
+                                        window.logger.log('Transaction completed is Approve!');
+
+                                        /*setTimeout(function () {
+                                            return actions.redirect("{{ url('commande_paiement_step', { 'number': 4 }) }}");
+                                        }, 4 * 1000);*/
+
+
+                                        // return actions.order.capture().then(function(details) {
+	                                    actions.order.authorize().then(function(authorization) {
+
+                                            // Get the authorization id
+                                            var authorizationID = authorization.purchase_units[0]
+                                                .payments.authorizations[0].id;
+
+                                            // Call your server to validate and capture the transaction
+                                            return fetch("{{ path('paypal_transaction_complete') }}", {
+                                                method: 'post',
+                                                headers: {
+                                                    'content-type': 'application/json'
+                                                },
+                                                body: JSON.stringify({
+                                                    orderID: data.orderID,
+                                                    authorizationID: authorizationID
+                                                })
+                                            }).then((res) => res.json ? res.json() : res.text())
+	                                            .then((payment) => {
+                                                    $('#ButtonPayment').html(`
+						                                <div class="w-25 d-flex flex-column text-center">
+															<small class="mb-2">Votre commande est déjà payé !</small>
+															<a href="{{ path('commande_paiement_step', { 'number': 4 }) }}" class="btn btn-primary w-100">Continuer</a>
+														</div>`);
+
+		                                            window.helpers.pingAlertTemporary(null, { message: 'Votre transaction à bien été prise en compte !', type: 'success', elevate: true });
+	                                            }).catch((error) => {
+                                                    window.helpers.pingAlertTemporary(null, { message: `Oops ! Il semberait qu'il s'est produit une erreur veuillez recharger la page, s'il vous plait...`, type: 'danger', elevate: true });
+                                                });
+                                        });
+                                    },
+                                    onApproval: (data, actions) => {
+                                        window.logger.log('Transaction completed is Approval!');
+
+                                        window.helpers.pingAlertTemporary(null, { message: 'Votre transaction à bien été prise en compte !', type: 'success', elevate: true });
+                                    },
+                                    onCancel: function(data, actions) {
+                                        window.logger.log('Transaction is Cancel!');
+
+                                        window.helpers.pingAlertTemporary(null, { message: 'Attention vous avez annulé la transaction ! <br />Vous-vous revenir à l\'<a href="{{ path('home') }}">acceuil</a> ?', type: 'info', elevate: true });
+
+                                        // return actions.redirect("{{ url('ligne_commande_index') }}");
+                                    }
+                                }).render('#paypal-button-container');
+                            }
+                        }
+                    })
+            });
+		</script>
+	{% endif %}
+
+{% endblock %}
+

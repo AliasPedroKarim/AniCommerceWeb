@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit TypeReduction{% endblock %}
+
+{% block body %}
+    <h1>Edit TypeReduction</h1>
+
+    {{ include('type_reduction/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('type_reduction_index') }}">back to list</a>
+
+    {{ include('type_reduction/_delete_form.html.twig') }}
+{% endblock %}

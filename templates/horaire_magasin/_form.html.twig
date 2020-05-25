@@ -1,0 +1,105 @@
+{% if multi is not defined or multi is defined and multi == false %}
+{{ form_start(form, { 'attr': { 'id': 'FormHoraireMagasin' } }) }}
+{% endif %}
+
+    <div class="col-12 px-0">
+        <div class="col-md-12 mb-3 d-flex flex-wrap align-content-center justify-content-md-center">
+            {% if form.jour.children %}
+                {% for jour in form.jour.children %}
+                    <div class="custom-control custom-checkbox mb-3 mr-3">
+                        {{ form_widget(jour, { 'attr': { 'class': 'custom-control-input' ~ (jour.vars['errors'] |length > 0 ? ' is-invalid' : '') ~ ' ' ~ jour.vars['attr']['id'] } }) }}
+                        {{ form_label(jour, jour.vars['label'], { 'label_attr': { 'class': 'custom-control-label' } }) }}
+
+                        <div class="invalid-feedback">
+                            {{ form_errors(jour) }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4 col-md-6">
+            <div class="form-group">
+                <div class="col mb-1">
+                    {{ form_label(form.hOuvertureMatin, "Heure Ouverture Matin", { }) }}
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroupPrependEmail"><i class="fas fa-clock fa-sm text-danger"></i></span>
+                        </div>
+                        {{ form_widget(form.hOuvertureMatin, { 'attr': { 'class': 'form-control ' ~ (form.hOuvertureMatin.vars['errors'] |length > 0 ? 'is-invalid' : ''), 'aria-describedby': form.hOuvertureMatin.vars['id'] } }) }}
+
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.hOuvertureMatin) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col mb-1">
+                    {{ form_label(form.hFermetureMatin, "Heure Fermeture Matin", { }) }}
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroupPrependEmail"><i class="fas fa-clock fa-sm text-danger"></i></span>
+                        </div>
+                        {{ form_widget(form.hFermetureMatin, { 'attr': { 'class': 'form-control ' ~ (form.hFermetureMatin.vars['errors'] |length > 0 ? 'is-invalid' : ''), 'aria-describedby': form.hFermetureMatin.vars['id'] } }) }}
+
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.hFermetureMatin) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col mb-1">
+                    {{ form_label(form.hOuvertureMidi, "Heure Ouverture Après-Midi", { }) }}
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroupPrependEmail"><i class="fas fa-clock fa-sm text-danger"></i></span>
+                        </div>
+                        {{ form_widget(form.hOuvertureMidi, { 'attr': { 'class': 'form-control ' ~ (form.hOuvertureMidi.vars['errors'] |length > 0 ? 'is-invalid' : ''), 'aria-describedby': form.hOuvertureMidi.vars['id'] } }) }}
+
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.hOuvertureMidi) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col mb-1">
+                    {{ form_label(form.hFermetureMidi, "Heure Fermeture Après-Midi", { }) }}
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroupPrependEmail"><i class="fas fa-clock fa-sm text-danger"></i></span>
+                        </div>
+                        {{ form_widget(form.hFermetureMidi, { 'attr': { 'class': 'form-control ' ~ (form.hFermetureMidi.vars['errors'] |length > 0 ? 'is-invalid' : ''), 'aria-describedby': form.hFermetureMidi.vars['id'] } }) }}
+
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.hFermetureMidi) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-md-6">
+
+
+            <div class="list-group" data-spy="scroll" data-target="" data-offset="0" id="ListHoraires">
+
+                {# Data #}
+
+            </div>
+
+        </div>
+    </div>
+
+    {{ form_widget(form) }}
+
+    {% if magasin is defined and magasin is not empty and magasin.id is not empty %}
+            <input type="hidden" id="horaire_magasin_hOuvertureMatin" name="horaire_magasin[idMagasin]" value="{{ magasin.id }}">
+    {% endif %}
+    <div style="display: none;" id="PayloadFormHoraires"></div>
+
+{% if multi is not defined or multi is defined and multi == false %}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+    {{ form_end(form) }}
+{% endif %}

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TypeReduction index{% endblock %}
+
+{% block body %}
+    <h1>TypeReduction index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Libelle</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for type_reduction in type_reductions %}
+            <tr>
+                <td>{{ type_reduction.id }}</td>
+                <td>{{ type_reduction.libelle }}</td>
+                <td>
+                    <a href="{{ path('type_reduction_show', {'id': type_reduction.id}) }}">show</a>
+                    <a href="{{ path('type_reduction_edit', {'id': type_reduction.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('type_reduction_new') }}">Create new</a>
+{% endblock %}

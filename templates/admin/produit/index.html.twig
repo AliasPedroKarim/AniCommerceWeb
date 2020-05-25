@@ -1,0 +1,253 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block section_admin %} Produits | {{ parent() }} {% endblock %}
+
+{% block page_content %}
+    {# Page Heading #}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Produits</h1>
+            <p class="mb-4">Managers les produits à votre guise.</p>
+        </div>
+        <a href="{{ path('admin_produit_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-shopping-bag fa-sm text-white-50"></i> Ajouter un produit
+        </a>
+    </div>
+
+    {# Dropdown Card Example #}
+    <div id="PayloadProduit">
+        {# Here payload magasin #}
+    </div>
+
+    {# DataTales Example #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des produits</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTableProduits" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Magasin</th>
+                        <th>Stocks</th>
+                        <th>prix Hors-Taxe</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Magasin</th>
+                        <th>Stocks</th>
+                        <th>prix Hors-Taxe</th>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    {% for produit in produits %}
+                        <tr data-id="{{ produit.id }}">
+                            <td>{{ produit.libelle }}</td>
+                            <td>{{ produit.idMagasin.nom }}</td>
+                            <td>{{ produit.stock }}</td>
+                            <td>{{ produit.prixHt }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(document).ready(() => {
+            {% for flashMessage in app.session.flashbag.get('success') %}
+                window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY(true);
+                window.helpers.pingAlertTemporary(null, { elevate: true, message: "{{ flashMessage|raw }}", type: 'success' });
+            {% endfor %}
+            {% for flashMessage in app.session.flashbag.get('danger') %}
+                window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY(true);
+                window.helpers.pingAlertTemporary(null, { elevate: true, message: "{{ flashMessage|raw }}", type: 'danger' });
+            {% endfor %}
+        });
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            let cred = {
+                {% for produit in produits %}
+                ["{{ produit.id }}"]: {
+                    c: "{{ csrf_token('delete' ~ produit.id) }}",
+                    d: "{{ path('admin_produit_delete', {'id': produit.id}) }}",
+                    e: "{{ path('admin_produit_edit', {'id': produit.id}) }}"
+                },
+                {% endfor %}
+            };
+
+            let table = $('#dataTableProduits').DataTable();
+
+            // Define my function
+            function buildProduitDropCard() {
+                window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY();
+                let sProduct = JSON.parse(sessionStorage.getItem(window.keys_sessions.PRODUCT_SELECT));
+
+                let p = $("#PayloadProduit");
+                if (!window.isEmpty(sProduct) && !window.isEmpty(cred[sProduct.id])) {
+                    p.html(`
+                            <div class="modal fade" id="ModalCenterProduit" tabindex="-1" role="dialog" aria-labelledby="ModalCenterProduitTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="ModalCenterProduitTitle">Images</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <div class="d-flex flex-column">
+
+                                                <div class="mb-3" id="PreviewImageProduit">
+                                                    <img
+                                                        src="${!window.isEmpty(sProduct.images) ? sProduct.images[0].idImage.cheminImage : '#'}" style="width: 100%;height: 100%;"
+                                                        alt="">
+                                                </div>
+                                                <div class="d-flex justify-content-center justify-content-md-start flex-wrap">
+                                                    ${sProduct.images.map(i => `<div data-id="${i.id}" class="rounded-sm mr-md-2 m-1 image-produit" style="
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        background: url('${i.idImage.cheminImage}') no-repeat top center;
+                                                        background-size: cover;
+                                                    "></div>`).join('')}
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                <i class="fas fa-minus-square fa-sm fa-fw text-gray-400"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card shadow-2dp mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Produit</h6>
+                                <div class="dropdown no-arrow">
+                                    <a class="mr-2" type="button" data-toggle="modal" data-target="#ModalCenterProduit" >
+                                        <i class="fas fa-images fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <a class="dismiss-card-present-produit mr-2 ml-2" >
+                                        <i class="fas fa-minus-square fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <a class="dropdown-toggle ml-2" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                        <div class="dropdown-header">Manager</div>
+                                        <a class="dropdown-item" href="${cred[sProduct.id].e}">Modifier</a>
+                                        <div class="dropdown-divider"></div>
+                                        <form method="post" action="${cred[sProduct.id].d}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_token" value="${cred[sProduct.id].c}">
+                                            <button class="dropdown-item">Supprimer</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-sm-12 col-lg-6">
+                                        <h4>Informations</h4>
+
+                                        <div class="d-flex">
+                                            <h5 class="mr-2">Nom Produit:</h5> ${sProduct.libelle}
+                                        </div>
+                                        <div class="d-flex">
+                                            <h5 class="mr-2">Prix HT:</h5> ${sProduct.prixHt}
+                                        </div>
+                                        <div class="d-flex">
+                                            <h5 class="mr-2">Stock:</h5> ${sProduct.stock}
+                                        </div>
+                                        <div class="d-flex">
+                                            <h5 class="mr-2">Magasin:</h5> ${sProduct.idMagasin.nom}
+                                        </div>
+                                        <div class="d-flex">
+                                            <h5 class="mr-2">Catégorie:</h5>
+                                            <div>
+                                                ${sProduct.associerCategories.map(ac => `<small class="text-white mx-2 badge" style="background-color: ${ac.idCategorie.color};">${ac.idCategorie.libelle}</small>`).join('')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        `);
+
+                }else{
+                    p.html('');
+                }
+            };
+
+            // Route payload data in JSON
+            buildProduitDropCard();
+            let produits = {{ _produits|raw }};
+
+            $('#dataTableProduits tbody').on('click', 'tr', function (e) {
+                let data = table.row( this ).data();
+                let idProduit = $(this).data('id');
+                if (idProduit && Array.isArray(produits)) {
+                    let produit = produits.find(m => m.id === idProduit);
+                    if (produit) {
+                        sessionStorage.setItem(window.keys_sessions.PRODUCT_SELECT, JSON.stringify(produit));
+                        return buildProduitDropCard();
+                    } else {
+                        window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY(true);
+                        buildProduitDropCard();
+                        return window.helpers.pingAlertTemporary(null, { message: 'Oops ! Identifiant du produit incorrect, veuillez recharger la page !', type: 'info', elevate: true });
+                    }
+                } else {
+                    return window.helpers.pingAlertTemporary(null, { message: 'Oops ! on dirait que l\'identifiant de ce produit est obstruer, veuillez recharger la page !', type: 'info', elevate: true });
+                }
+
+            } );
+
+            $('#AdminWrapper').on('click', '.dismiss-card-present-produit', function (e) {
+                window.logger.log('go dismiss card presentation produit');
+                window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY(true);
+                buildProduitDropCard();
+            });
+
+            $('#AdminWrapper').on('click', '.image-produit', function (e) {
+                window.keys_sessions.fn.PRODUCT_SELECT_INTEGRITY();
+                let sProduct = JSON.parse(sessionStorage.getItem(window.keys_sessions.PRODUCT_SELECT));
+                let id = $(this).data('id');
+
+                if (!window.isEmpty(id) && sProduct) {
+                    let link = sProduct.images.find(c => c.id === id);
+                    if (!window.isEmpty(link)) {
+                        $('#PreviewImageProduit').html(`
+                        <img
+                            src="${link.idImage.cheminImage}" style="width: 100%;height: 100%;"
+                            alt="">
+                    `);
+                    }
+                }
+
+            });
+
+
+        });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,314 @@
+{# Topbar #}
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+	{% if 'admin' not in pathInfo %}
+		<a class="navbar-brand h5 mr-md-auto my-0 font-weight-normal" href="{{ path('home') }}">
+			<img src="{{ asset('favicon.gif') }}" width="30" height="30" class="d-inline-block align-top" alt="">
+			<span class="d-none d-sm-inline-block">
+				{{ app_name }}
+			</span>
+		</a>
+	{% endif %}
+
+	{% if 'admin' in pathInfo %}
+		{# Sidebar Toggle (Topbar) #}
+		<button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+			<i class="fa fa-bars"></i>
+		</button>
+	{% endif %}
+
+	{% set ignore = 'login' not in pathInfo and 'register' not in pathInfo and 'search' not in pathInfo and 'profile' not in pathInfo %}
+
+	{% if ignore %}
+		{# Topbar Search #}
+
+		<div class="ml-auto">
+			<form class="d-none d-md-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+				<div class="input-group">
+					<input type="text" class="form-control bg-light border-0 small input-search" placeholder="Recherche..." aria-label="Search" aria-describedby="basic-addon2">
+					<div class="input-group-append">
+						<button class="btn btn-primary dropdown-toggle" type="button" id="GoSearch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<i class="fas fa-search fa-sm"></i>
+						</button>
+
+						{# Dropdown - Cart #}
+						<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in dropdown-menu-search" aria-labelledby="GoSearch">
+							{# Content Dropdown #}
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	{% else %}
+		<div class="ml-auto">
+		</div>
+	{% endif %}
+
+	{# Topbar Navbar #}
+	<ul class="navbar-nav d-flex align-items-center">
+		{% if ignore %}
+			{# Nav Item - Search Dropdown (Visible Only XS) #}
+			<li class="nav-item dropdown no-arrow d-sm-none">
+				<a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-search fa-fw"></i>
+				</a>
+				{# Dropdown - Messages #}
+				<div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
+					<form class="form-inline mr-auto w-100 navbar-search">
+						<div class="input-group">
+							<input type="text" class="form-control bg-light border-0 small input-search" placeholder="Recherche..." aria-label="Search" aria-describedby="basic-addon2">
+							<div class="input-group-append">
+								<button class="btn btn-primary dropdown-toggle" type="button" id="GoSearch2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<i class="fas fa-search fa-sm"></i>
+								</button>
+
+								{# Dropdown - Cart #}
+								<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in dropdown-menu-search" aria-labelledby="GoSearch2" >
+									{# Content Dropdown #}
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</li>
+		{% endif %}
+
+		<div class="topbar-divider d-none d-sm-block"></div>
+
+		{# Nav Item - Produits #}
+		<li class="nav-item no-arrow mx-1">
+			<a class="nav-link" href="{{ path('produit_index') }}" id="" role="button" aria-expanded="false">
+				<i class="fas fa-wine-bottle fa-fw"></i>
+			</a>
+		</li>
+		<li class="nav-item no-arrow mx-1">
+			<a class="nav-link" href="{{ path('magasin_index') }}" id="" role="button" aria-expanded="false">
+				<i class="fas fa-store fa-fw"></i>
+			</a>
+		</li>
+
+		{# Handle panier #}
+		{% set preview_panier = [] %}
+		{% set quantite = 0 %}
+
+		{% if app.user %}
+			{% if ligneCommandes and ligneCommandes is not empty %}
+				{% for ligneCommande in ligneCommandes %}
+					{% set quantite = quantite + ligneCommande.quantite %}
+					{% set preview_panier = preview_panier|merge([{
+						'quantite': ligneCommande.quantite,
+						'produit': ligneCommande.idProduit,
+						'image': (ligneCommande.idProduit.images.empty ? produit_image_default : ligneCommande.idProduit.images.get(0).idImage.cheminImage )
+					}]) %}
+				{% endfor %}
+			{% endif %}
+		{% else %}
+			{% if produits and produits is not empty %}
+				{% for produit in produits %}
+					{% set quantite = quantite + produit['quantite'] %}
+					{% set preview_panier = preview_panier|merge([{
+						'quantite': produit['quantite'],
+						'produit': produit['produit'],
+						'image': produit['image'] is defined and produit['image'] is not empty ? produit['image'] : produit_image_default
+					}]) %}
+				{% endfor %}
+			{% endif %}
+		{% endif %}
+
+
+		{# Nav Item - Cart #}
+
+		<li class="nav-item dropdown no-arrow mx-1">
+			<a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<i class="fas fa-shopping-bag fa-fw"></i>
+				{# Counter - Cart #}
+				<span class="badge badge-danger badge-counter">
+					{{ quantite }}
+				</span>
+			</a>
+
+			{# Dropdown - Cart #}
+
+			<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="cartDropdown">
+				<h6 class="dropdown-header">
+					Paniers
+				</h6>
+
+				{% for p in preview_panier|slice(0, 6) %}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="dropdown-list-image mr-3">
+							{#<img class="rounded-circle" src="https://image.flaticon.com/icons/svg/2836/{{random([ '2836488', '2836539', '2836485', '2836624', '2836507']) }}.svg" alt="">#}
+							<img class="rounded-circle" src="{{ p['image'] }}" alt="">
+						</div>
+						<div class="font-weight-bold">
+							<div class="text-truncate">{{ p['produit'].libelle }}</div>
+							<div class="small text-gray-500">Quantité · {{ p['quantite'] }}</div>
+						</div>
+					</a>
+				{% else %}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="dropdown-list-image mr-3">
+							<img class="rounded-circle" src="https://image.flaticon.com/icons/svg/2038/2038854.svg" alt="">
+						</div>
+						<div class="font-weight-bold">
+							<div class="text-truncate">Oops ! Panier vide</div>
+							<div class="small text-gray-500">😅</div>
+						</div>
+					</a>
+				{% endfor %}
+
+				<a class="dropdown-item text-center small text-gray-500" href="{{ path('ligne_commande_index') }}">Votre panier</a>
+			</div>
+		</li>
+
+		<div class="topbar-divider d-none d-sm-block"></div>
+
+		{% if app.user %}
+			{# Nav Item - User Information #}
+			<li class="nav-item dropdown no-arrow">
+				<a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ app.user.prenom ~ ' ' ~ app.user.nom }}</span>
+					<img class="img-profile rounded-circle" src="{{ app.user.idImage is not empty ? app.user.idImage.cheminImage : 'https://image.flaticon.com/icons/svg/1621/1621561.svg' }}">
+				</a>
+				{# Dropdown - User Information #}
+				<div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+					<a class="dropdown-item" href="{{ path('utilisateur_profile') }}">
+						<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+						Profile
+					</a>
+					{% if is_granted('ROLE_ADMIN') %}
+						<a class="dropdown-item" href="{{ path('admin') }}">
+							<i class="fas fa-tools fa-sm fa-fw mr-2 text-gray-400"></i>
+							Admin
+						</a>
+					{% endif %}
+					<a class="dropdown-item" href="{{ path('commande_index') }}">
+						<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+						Commands
+					</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+						<i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+						Deconnexion
+					</a>
+				</div>
+			</li>
+		{% else %}
+			<li class="nav-item dropdown no-arrow">
+				<a href="{{ path('utilisateur_register') }}" class="btn mr-1">
+					<i class="fas fa-user-plus fa-md fa-fw text-gray-400"></i>
+				</a>
+				<a href="{{ path('app_login') }}" class="btn my-sm-0 ml-1">
+					<i class="fas fa-sign-in-alt fa-md fa-fw text-gray-400"></i>
+				</a>
+			</li>
+		{% endif %}
+
+	</ul>
+
+</nav>
+{# End of Topbar #}
+
+
+{% if ignore %}
+
+	<script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const default_image = "{{ produit_image_default }}";
+            const LIMIT_SEARCH = 4;
+            let InputSearch = $('.input-search');
+
+            let time = 2;
+            var timer = null;
+
+            function link_produit(id) {
+                return `{{ path('produit_show', { 'id': '--id--' }) }}`.replace('--id--', id);
+            }
+
+            function link_magasin(id) {
+                return `{{ path('magasin_show', { 'id': '--id--' }) }}`.replace('--id--', id);
+            }
+
+            function buildDropdownMenu(data, link) {
+
+                $(".dropdown-menu-search").html(`
+	            <h6 class="dropdown-header">
+					Recherche...
+				</h6>
+
+				${data.produits.length <= 0 ? `<div class="font-weight-bold text-center my-2">
+													<div class="text-truncate">Aucun produit ne correspond</div>
+												</div>` : data.produits.slice(0, 3).map(produit => `
+					<a class="dropdown-item d-flex align-items-center" href="${link_produit(produit.id)}">
+						<div class="dropdown-list-image mr-3">
+							<img class="rounded-circle" src="${ produit.images.length > 0 ? produit.images[0].idImage.cheminImage : default_image }" alt="">
+						</div>
+						<div class="font-weight-bold">
+							<div class="text-truncate">${produit.libelle}</div>
+							<div class="small text-gray-500">Produit</div>
+						</div>
+					</a>`).join('')}
+
+				<div class="dropdown-divider"></div>
+
+				${data.magasins.length <= 0 ? `<div class="font-weight-bold text-center my-2">
+													<div class="text-truncate">Aucun magasin ne correspond</div>
+												</div>` :
+                    data.magasins.slice(0, 3).map(magasin => `
+					<a class="dropdown-item d-flex align-items-center" href="${link_magasin(magasin.id)}">
+						<div class="font-weight-bold">
+							<div class="text-truncate">${magasin.nom}</div>
+							<div class="small text-gray-500">Magasin</div>
+						</div>
+					</a>`).join('')}
+
+				<a class="dropdown-item text-center small text-gray-500" href="${link}">Plus</a>
+            `);
+
+            }
+
+
+            if (InputSearch.length > 0) {
+
+                InputSearch.bind('paste keyup', (e) => {
+                    e.stopPropagation();
+                    let query = $(e.target).val();
+                    if (query.length >= LIMIT_SEARCH) {
+                        if (timer !== null) {
+                            clearTimeout(timer);
+                            timer = null;
+                        }
+
+                        timer = setTimeout(async () => {
+                            logger.log('HELLO MY FRIEND');
+
+                            let link = `{{ path('app_search') }}?q=${query}`;
+                            let data = await fetch(link, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            }).then((res) => res.json());
+
+                            if (data) {
+                                buildDropdownMenu(data, link);
+                            }
+
+                            $('#GoSearch').dropdown("show");
+                            $('#GoSearch2').dropdown("show");
+                            InputSearch.focus();
+                        }, time * 1000);
+                    }else if (window.isEmpty(query.length)){
+                        $('#GoSearch').dropdown("hide");
+                        $('#GoSearch2').dropdown("hide");
+                    }
+                });
+
+            }
+
+
+
+        });
+	</script>
+
+{% endif %}

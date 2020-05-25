@@ -1,0 +1,37 @@
+{% if multi is not defined or multi is defined and multi == false %}
+{{ form_start(form) }}
+{% endif %}
+    <div class="form-group">
+        <div class="col mb-3">
+            {{ form_label(form.libelle, "Nom de l'adresse (optionnel)", { }) }}
+            {{ form_widget(form.libelle, { 'attr': { 'class': 'form-control' ~ ( form.libelle.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+        </div>
+        <div class="col mb-3">
+            {{ form_label(form.adr, "Adresse", { }) }}
+            {{ form_widget(form.adr, { 'attr': { 'class': 'form-control' ~ ( form.adr.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+            <div class="invalid-feedback">
+                {{ form_errors(form.adr) is not empty ? form_errors(form.adr) : "Veuillez saisir votre adresse !" }}
+            </div>
+        </div>
+        <div class="col mb-3">
+            {{ form_label(form.compl, "Complémentaire", { }) }}
+            {{ form_widget(form.compl, { 'attr': { 'class': 'form-control' ~ ( form.compl.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+        </div>
+
+        <div class="col mb-3">
+            {{ form_label(form.idVille, "Ville", { }) }}
+            {{ form_widget(form.idVille, { 'attr': { 'class': 'custom-select' ~ ( form.idVille.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+            <div class="invalid-feedback">
+                {{ form_errors(form.idVille) }}
+            </div>
+        </div>
+    </div>
+
+    {{ form_widget(form) }}
+
+{% if multi is not defined or multi is defined and multi == false %}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}
+{% endif %}

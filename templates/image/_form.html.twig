@@ -1,0 +1,150 @@
+{% if multi is not defined or multi is defined and multi == false %}
+{{ form_start(form) }}
+{% endif %}
+
+{# Possibility format (default, avatar) #}
+
+    <div class="d-flex justify-content-center">
+        {% set round_level = format is defined and format == 'avatar' ? 'rounded-circle' : 'rounded-sm' %}
+        {% set style_level = format is defined and format == 'avatar' ? 'height: 180px;width: 180px;' : 'height: 180px;width: 100%;' %}
+
+        <div class="preview-img {{ round_level }} shadow-3dp" id="PreviewImage" style="
+            background: url('{{ form.cheminImage.vars['value'] is not empty ? form.cheminImage.vars['value'] : produit_image_default }}') no-repeat top center;
+            background-size: cover;
+            {{ style_level }} ">
+            <label for="FileImage" class="label-img {{ round_level }}">
+                <div style="display: inline-grid; justify-content: center; align-content: center;">
+                    <i class="fas fa-plus" style="color: white; font-size: 3.0em;"> </i>
+                </div>
+            </label>
+        </div>
+
+        <input type="file" class="form-control" id="FileImage" name="image-magasin" aria-describedby="inputGroupPrepend" style="display: none;">
+    </div>
+
+    <div class="mt-2">
+        {{ form_label(form.cheminImage, "Image ", { }) }} <small>(https://...)</small>
+        {{ form_widget(form.cheminImage, { 'attr': { 'class': 'form-control' ~ ( form.cheminImage.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+        <div class="invalid-feedback">
+            {{ form_errors(form.cheminImage) is not empty ? form_errors(form.cheminImage) : "Lien d'image invalide !" }}
+        </div>
+    </div>
+
+    <div class="my-3 d-flex justify-content-center" id="SuggestUpload">
+        <a href="#" id="ButtonUploadImage" class="d-none btn btn-sm btn-danger shadow-sm ml-md-2 mx-sm-2">
+            <i class="fas fa-file-upload fa-sm text-white-50"></i> Enregister
+        </a>
+    </div>
+
+    <div class="{{ hide is not defined or 'description' not in hide ? '' : 'd-none' }} mt-2">
+        {{ form_label(form.description, "Description", { }) }}
+        {{ form_widget(form.description, { 'attr': { 'class': 'form-control' ~ ( form.description.vars['errors'] |length > 0 ? ' is-invalid' : '' ) } }) }}
+
+        <div class="invalid-feedback">
+            {{ form_errors(form.description) is not empty ? form_errors(form.description) : "" }}
+        </div>
+    </div>
+
+{{ form_widget(form) }}
+
+{% if multi is not defined or multi is defined and multi == false %}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+    {{ form_end(form) }}
+{% endif %}
+
+<script type="text/javascript">
+
+    window.addEventListener('DOMContentLoaded', (e) => {
+        const type = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
+
+        function checkValidityFile(files) {
+            if (files.length > 0) {
+
+                if (type.includes(files[0].type)) {
+
+                    // 1 bytes = 1000000 MegaBytes
+                    if (files[0].size < 2 * 1000000) {
+
+                        $('#ButtonUploadImage').removeClass('d-none');
+
+                        window.showImage(e, window.URL.createObjectURL(files[0]), false, $('#PreviewImage'));
+
+                        return true;
+                    }else{
+                        window.helpers.pingAlertTemporary(null, { elevate: true, message: `Attention ! le fichier que vous avez selectionner et trop lourd <br />La limite est de 10MB.`, type: "warning" });
+                    }
+                }else{
+                    window.helpers.pingAlertTemporary(null, { elevate: true, message: `Ce type de fichier image n'est pas permis ! <br />
+Type permis : ${type.map(t => `<b>${t.split('/')[1]}</b>`).join(', ')}`, type: "warning" });
+                }
+
+                $('#FileImage').val("");
+                return false;
+            }
+
+            $('#ButtonUploadImage').addClass('d-none');
+            return false;
+        };
+
+        $('#FileImage').bind("change paste keyup", function(e) {
+            return checkValidityFile(this.files);
+        });
+
+        $('#ButtonUploadImage').on('click', async () => {
+            let files = document.getElementById('FileImage').files;
+
+            if (checkValidityFile(files)) {
+                let myHeaders = new Headers();
+                myHeaders.append("Authorization", "Client-ID {{ imgur_client_id }}");
+
+                let formdata = new FormData();
+                formdata.append("image", files[0]);
+                formdata.append("name", files[0].name);
+
+                let requestOptions = {
+                    method: 'POST',
+                    headers: myHeaders,
+                    body: formdata,
+                    redirect: 'follow'
+                };
+
+                window.keys_sessions.fn.IMAGE_STORE_UPLOAD();
+
+                let s = JSON.parse(localStorage.getItem(window.keys_sessions.IMAGE_STORE_UPLOAD));
+                let image = s.images.find(image => image.name === files[0].name);
+
+                if (!image) {
+                    let result = await fetch(window.endpoints.IMGUR_UPLOAD, requestOptions)
+                        .then(response => response.json());
+
+                    if (result && result.data) {
+                        image = result.data;
+
+                        // Handle session store
+                        if (s.images.length > 5) s.images.shift();
+                        s.images.push(image);
+                        localStorage.setItem(window.keys_sessions.IMAGE_STORE_UPLOAD, JSON.stringify(s));
+
+                        logger.log(`New Image is generate and upload in Imgur !`);
+                    }
+                }else{
+                    logger.log(`Ohh ! Attempt get image data in cache storage...`);
+                }
+
+                if (image) {
+                    $('#image_cheminImage').val(image.link);
+
+                    window.helpers.pingAlertTemporary(null, { elevate: true, message: `Votre image prête à être utiliser !`, type: "success" });
+                    $('#ButtonUploadImage').addClass('d-none');
+                }else{
+                    window.helpers.pingAlertTemporary(null, { elevate: true, message: `Aucune image n'a pu être générer, veuillez reéssayer ultérieurement.`, type: "warning" });
+                }
+
+            }
+
+        });
+
+    });
+
+</script>

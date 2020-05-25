@@ -1,0 +1,228 @@
+<script type="text/javascript">
+    $(document).ready(function (e) {
+
+        $('#FileImage').bind("change paste keyup", function(e) {
+            if (this.files.length > 0) {
+                window.showImage(e, window.URL.createObjectURL(this.files[0]), true, $('#PreviewImage'));
+            }
+        });
+
+        $('#image_cheminImage').bind("change paste keyup", function(e) {
+            let url = $(e.target).val();
+            if (!window.isEmpty(url) && window.helpers.isUrl(url)) {
+                window.showImage(e, url, false, $('#PreviewImage'));
+            }
+        });
+
+        $('#image_cheminImage').focusout(function(e) {
+            if ($(e.target).val() !== "" && !window.helpers.isUrl($(e.target).val())) {
+                return window.helpers.pingAlertTemporary(null, { elevate: true, message: "Oups ! Votre URL est invalide...", type: 'danger' });
+            }
+        });
+
+        // Validation formulaire
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        let forms = document.getElementById('NeedsValidationMagasin');
+        // Loop over them and prevent submission
+        let validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(() => {
+        // Overwrite jQuery
+        $.fn.serializeObject = function() {
+            let o = {};
+            let a = this.serializeArray();
+            $.each(a, function() {
+                if (o[this.name]) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+
+        // Define my variable
+        let addHours = $('#AddHours');
+        let __keys = window.keys_sessions.SHOP_CREATE;
+
+        let cred = {
+		    {% if _horaires is defined %}
+			    {% for _horaire in _horaires %}
+		            ["{{ _horaire.id }}"]: {
+		                c: "{{ csrf_token('delete' ~ _horaire.id) }}",
+		                d: "{{ path('horaire_magasin_delete', {'id': _horaire.id}) }}",
+		                e: "{{ path('horaire_magasin_edit', {'id': _horaire.id}) }}"
+		            },
+			    {% endfor %}
+		    {% endif %}
+        };
+
+        let mode_edit = {
+            "horaires": {{ horaires is defined ? horaires|raw : '""' }}
+        };
+
+        function clearInput() {
+            let listForms = $('input[name*="horaire_magasin"]');
+            listForms.each((key, input) => {
+                if (input.type !== 'checkbox' && !['horaire_magasin[_token]', 'horaire_magasin[idMagasin]'].includes(input.name)) {
+                    $(input).val('');
+                    $(input).prop('selectedIndex',0);
+                    $(input).attr('checked',false);
+                    $(input).val(null);
+                }
+            });
+        }
+        function buildPayloadFormHoraires() {
+            window.keys_sessions.fn.SHOP_CREATE_INTEGRITY();
+
+            let message = '';
+            let message_list = '';
+
+            let h = {{ horaires is defined ? 'mode_edit' : 'JSON.parse(sessionStorage.getItem(__keys))' }};
+
+            $('#AdminWrapper').on('click', '.dismiss-horaire-magasin', function (e) {
+                window.logger.log($(e.target).data())
+            });
+
+            for (let pHoraire of h.horaires) {
+                message += `<input data-id="${pHoraire.id}" type="hidden" value="${pHoraire.id}" name="horaires[]">`;
+                message_list += window.buildRowHoraire(pHoraire) ;
+
+                $('#PayloadFormHoraires').html(message);
+                $('#ListHoraires').html(message_list);
+
+                let j = $(`.Jour${pHoraire.jour}`);
+                if (!window.isEmpty(j) && !window.isEmpty(j[0])) {
+                    $(j[0]).attr('disabled', true);
+                    $(j[0]).attr('checked', true);
+                }
+            }
+        }
+
+        // Run
+        buildPayloadFormHoraires();
+
+        if (!window.isEmpty(addHours)) {
+            addHours.on('click', (e) => {
+                var form = document.createElement("form");
+                let listForms = $('input[name*="horaire_magasin"]');
+                listForms.each((key, input) => {
+                    let exec = /(?:\[)(\w+)(?:\])/gmi.exec(input.name);
+                    let cloneInput = input.cloneNode();
+                    if (!window.isEmpty(exec) && Array.isArray(exec) && exec[1]) {
+                        cloneInput.name = exec[1];
+                    }
+                    form.appendChild(cloneInput);
+                });
+
+                form.setAttribute('name', 'horaire_magasin');
+                form.setAttribute('method', 'POST');
+                form.setAttribute('action', "{{ path('horaire_magasin_new') }}");
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!window.isEmpty(form)) {
+                    if (form.checkValidity()) {
+                        $('#SpinnerHoraire').html(`
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            `.trim());
+
+                        fetch("{{ path('horaire_magasin_new') }}", {
+                            method: 'post',
+                            headers: new Headers({
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            }),
+                            body: JSON.stringify($(form).serializeObject())
+                        })
+                            .then((res) => res.headers.get('content-type').includes("application/json") ? res.json() : res.text())
+                            .then((_res) => {
+                                if (_res) {
+                                    $(`#SpinnerHoraire>div`).fadeOut({
+                                        delay: 5 * 1000,
+                                        easing: "linear"
+                                    });
+
+                                    setTimeout(() => {
+                                        $(`#SpinnerHoraire`).html('')
+                                    }, 5 * 1000)
+
+                                    if (_res && _res.data && !_res.error) {
+                                        window.keys_sessions.fn.SHOP_CREATE_INTEGRITY();
+                                        let horaires = {{ horaires is defined ? 'mode_edit' : 'JSON.parse(sessionStorage.getItem(__keys))' }};
+
+                                        if (Array.isArray(_res.data)) {
+                                            for (let d of _res.data) {
+                                                horaires.horaires.push(d);
+                                            }
+                                        }else{
+                                            horaires.horaires.push(_res.data);
+                                        }
+
+                                        {{ horaires is defined ? 'if(mode_edit) mode_edit=horaires' : 'sessionStorage.setItem(__keys, JSON.stringify(horaires))' }}
+                                        window.helpers.pingAlertTemporary(null, { elevate: true, message: "Cette horaire a été rajouter !", type: 'success' });
+                                        clearInput();
+                                        return buildPayloadFormHoraires();
+                                    }else{
+                                        return window.helpers.pingAlertTemporary(null, {
+                                            elevate: true,
+                                            message: _res.message ? _res.message : "Attention ! Une erreur s'est produit lors de la création de l'horaire !",
+                                            type: 'danger' });
+                                    }
+                                }
+                            });
+                    }else{
+                        window.helpers.pingAlertTemporary(null, { elevate: true, message: "Oups ! Formulaire des horaires invalides...", type: 'warning' })
+                    }
+                }else{
+                    window.helpers.pingAlertTemporary(null, { elevate: true, message: "Oups ! Formulaire des horaires invalides...", type: 'warning' })
+                }
+                // form.classList.add('was-validated');
+            });
+
+        }
+
+        $('#AdminWrapper').on('click', '.dismiss-horaire-magasin', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+			if (confirm('Are you sure you want to delete this item?')) {
+                let id = $(this).data('id');
+
+                let form = document.createElement('form');
+                form.setAttribute('name', 'delete_horaire');
+                form.setAttribute('action', cred[id].d);
+                form.setAttribute('method', 'post');
+
+                for (let iInfo of [{ key: '_method', value: 'DELETE' }, { key: '_token', value: cred[id].c }]) {
+                    let input = document.createElement('input');
+                    input.setAttribute('name', iInfo.key);
+                    input.setAttribute('value', iInfo.value);
+                    form.append(input);
+                }
+				$('#PayloadFormHoraires').append(form);
+
+                document.forms['delete_horaire'].submit();
+	        }
+        });
+
+    });
+
+</script>

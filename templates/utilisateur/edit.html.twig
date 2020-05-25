@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modification de votre profile - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <h1 class="mb-3">Modifier</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-10">
+                {{ include('utilisateur/_form.html.twig', {'button_label': 'Mettre à jour', 'action': 'edit'}) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

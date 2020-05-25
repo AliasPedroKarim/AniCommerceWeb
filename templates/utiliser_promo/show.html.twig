@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}UtiliserPromo{% endblock %}
+
+{% block body %}
+    <h1>UtiliserPromo</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ utiliser_promo.id }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('utiliser_promo_index') }}">back to list</a>
+
+    <a href="{{ path('utiliser_promo_edit', {'id': utiliser_promo.id}) }}">edit</a>
+
+    {{ include('utiliser_promo/_delete_form.html.twig') }}
+{% endblock %}

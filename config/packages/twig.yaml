@@ -1,0 +1,18 @@
+twig:
+    default_path: "%kernel.project_dir%/templates"
+    # debug: "%kernel.debug%"
+    # strict_variables: "%kernel.debug%"
+    auto_reload: true
+    # optimizations: -1
+
+    cache: false
+    
+    globals:
+        app_name: "%env(APP_NAME)%"
+        recaptcha_key_web: "%env(GOOGLE_RECAPTCHA_SITE_KEY)%"
+        paypal_client_id: "%env(PAYPAL_SANDBOX_CLIENT_ID)%"
+        google_client_id: "%env(OAUTH_GOOGLE_ID)%"
+        imgur_client_id: "%env(IMGUR_CLIENT_ID)%"
+        
+        # Global
+        produit_image_default: "https://images.assetsdelivery.com/compings_v2/pavelstasevich/pavelstasevich1902/pavelstasevich190200120.jpg"

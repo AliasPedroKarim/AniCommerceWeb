@@ -1,0 +1,28 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block section_admin %} Ajouter un Magasin | {{ parent() }} {% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+{% endblock %}
+
+{% block page_content %}
+    {# Page Heading #}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Magasin</h1>
+            <p class="mb-4">Creer un magasin à votre guise.</p>
+        </div>
+        {#<a href="{{ path('magasin_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-shopping-bag fa-sm text-white-50"></i> Ajouter un magasin</a>#}
+    </div>
+
+    {{ include('admin/magasin/_form.html.twig') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {{ include('admin/magasin/_scripts.html.twig') }}
+
+{% endblock %}

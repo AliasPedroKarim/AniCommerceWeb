@@ -1,0 +1,28 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block section_admin %} Produits | {{ parent() }} {% endblock %}
+
+{% block page_content %}
+    {# Page Heading #}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Produits</h1>
+            <p class="mb-4">Créer un produit à votre guise.</p>
+        </div>
+    </div>
+
+    {{ include('admin/produit/_form.html.twig') }}
+
+    <div class="d-sm-flex align-items-center justify-content-start mt-4">
+        <a href="{{ path('produit_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+            <i class="fas fa-cross fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {{ include('admin/produit/_scripts.html.twig') }}
+
+{% endblock %}

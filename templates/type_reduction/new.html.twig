@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New TypeReduction{% endblock %}
+
+{% block body %}
+    <h1>Create new TypeReduction</h1>
+
+    {{ include('type_reduction/_form.html.twig') }}
+
+    <a href="{{ path('type_reduction_index') }}">back to list</a>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% if app.user and app.user.disabled %}
+	<div class="alert alert-warning d-flex" role="alert">
+		<div class="w-100">
+			Votre compte est désactivé ! <br>
+			Si vous voulez le réactiver cliquez ci-dessous. <br>
+		</div>
+
+		<div class="w-100 d-flex justify-content-end align-content-center">
+			<form method="post" action="{{ path('utilisateur_enable', {'id': app.user.id}) }}" id="FormEnabledAccount">
+				<input type="hidden" name="_token" value="{{ csrf_token('enabled' ~ app.user.id) }}">
+				<button class="btn btn-primary mx-2 m-auto" id="EnabledAccount">Réactiver</button>
+			</form>
+		</div>
+	</div>
+{% endif %}

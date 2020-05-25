@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit AssocierCategorie{% endblock %}
+
+{% block body %}
+    <h1>Edit AssocierCategorie</h1>
+
+    {{ include('associer_categorie/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('associer_categorie_index') }}">back to list</a>
+
+    {{ include('associer_categorie/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,65 @@
+{{ include('layout/notify_script.html.twig') }}
+
+<script>
+    $(document).ready(() => {
+        $('.btn-ajout-produit').on('click', (e) => {
+
+            let id = $(e.target).data('id');
+            let stock = parseInt($(e.target).data('stock'));
+            let qte = $(e.target).data('qte');
+            let link = $(e.target).data('link');
+            let csrf = $(e.target).data('csrf');
+
+            Swal.fire({
+                title: 'Entre une quantité.',
+                input: 'text',
+                inputValue: qte,
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (window.isEmpty(parseInt(value))) {
+                        return 'Il faut saisir une quantité !'
+                    } else {
+                        value = parseInt(value);
+
+                        if (isNaN(value)) {
+                            return 'La quantité doit être un nombre.'
+                        }
+                        if (!isNaN(stock) && value > stock) {
+                            return 'Ce nombre est trop grand comparer au stock.'
+                        }
+                    }
+                }
+            })
+            .then(({ value }) => {
+                if (value) {
+                    let id = $(this).data('id');
+
+                    let form = document.createElement('form');
+                    form.setAttribute('name', 'ajout-produit');
+                    form.setAttribute('action', link);
+                    form.setAttribute('method', 'post');
+                    form.setAttribute('style', 'display:none;');
+
+                    for (let iInfo of [
+                            { key: 'id', value: id },
+                        { key: 'quantite', value: value },
+                        { key: 'ligne_commande[quantite]', value: value },
+                        { key: '_token', value: csrf },
+                        { key: 'ligne_commande[_token]', value: csrf }
+                        ]) {
+                        let input = document.createElement('input');
+                        input.setAttribute('name', iInfo.key);
+                        input.setAttribute('value', iInfo.value);
+                        form.append(input);
+                    }
+
+                    $('body').append(form);
+
+                    document.forms['ajout-produit'].submit();
+                }
+            });
+
+        });
+
+    });
+</script>

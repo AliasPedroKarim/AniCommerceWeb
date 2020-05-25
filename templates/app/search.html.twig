@@ -1,0 +1,184 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Recherche [{{ app.request.get('q') }}] - {{ parent() }} {% endblock %}
+
+{% block body %}
+
+	<div class="container">
+
+		<form class="d-none d-md-inline-block form-inline my-2 mw-100 navbar-search w-100">
+			<div class="input-group">
+				<input type="text" class="form-control bg-light border-0 small input-search" placeholder="Recherche..." aria-label="Search" aria-describedby="basic-addon2">
+				<div class="input-group-append">
+					<button class="btn btn-primary" type="button">
+						<i class="fas fa-search fa-sm"></i>
+					</button>
+				</div>
+			</div>
+		</form>
+
+
+		<h2 class="my-3">Résultat de la recherche de : <span class="query-search">{{ app.request.get('q') }}</span></h2>
+
+		<hr class="mb-3">
+
+		<h3 class="my-3">Produits</h3>
+		<div class="row list-produits">
+
+			{#{% if produits is defined %}
+				{% for produit in produits %}
+
+					<div class="col-md-4">
+						<div class="card m-3">
+							<div class="card-body">
+								<h5 class="card-title">
+									{{ produit.libelle }}
+								</h5>
+								<h6 class="card-subtitle mb-2 text-muted">{{ produit.prixHt }} €</h6>
+								<p class="card-text">
+									{{ produit.description|slice(0, 40) }}...
+								</p>
+								<a href="{{ path('produit_show', { 'id': produit.id }) }}" class="card-link">Voir le produit</a>
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<h5>Aucun produit ne correspond !</h5>
+				{% endfor %}
+			{% endif %}#}
+		</div>
+
+		<h3 class="my-3">Magasins</h3>
+		<div class="row list-magasins">
+
+			{#{% if magasins is defined %}
+				{% for magasin in magasins %}
+
+					<div class="col-md-4">
+						<div class="card m-3">
+							<div class="card-body">
+								<h5 class="card-title">
+									{{ magasin.nom }}
+								</h5>
+								<h6 class="card-subtitle mb-2 text-muted">{{ magasin.courriel }}</h6>
+								<a href="{{ path('magasin_show', { 'id': magasin.id }) }}" class="card-link">Voir le magasin</a>
+							</div>
+						</div>
+					</div>
+
+				{% else %}
+					<h5>Aucun magasin ne correspond !</h5>
+				{% endfor %}
+			{% endif %}#}
+		</div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+	{{ parent() }}
+
+	<script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const LIMIT_SEARCH = 4;
+            let InputSearch = $('.input-search');
+
+            let time = 2;
+            var timer = null;
+
+            let produits = {{ produits is defined ? produits|raw : '[]' }};
+            let magasins = {{ magasins is defined ? magasins|raw : '[]' }};
+
+            function link_produit(id) {
+                return `{{ path('produit_show', { 'id': '--id--' }) }}`.replace('--id--', id);
+            }
+
+            function link_magasin(id) {
+                return `{{ path('magasin_show', { 'id': '--id--' }) }}`.replace('--id--', id);
+            }
+
+            function buildResult(data) {
+				if (!data) return;
+	            $('.list-produits').html(`
+		            ${data.produits && data.produits.length > 0 ? data.produits.map(produit => `
+		                <div class="col-md-4">
+							<div class="card m-3">
+								<div class="card-body">
+									<h5 class="card-title">
+										${produit.libelle}
+									</h5>
+									<h6 class="card-subtitle mb-2 text-muted">${produit.prixHt} €</h6>
+									<p class="card-text">
+										${produit.description ? produit.description.substring(0, 40) + '...' : '<e>Pas de description</e>'}
+									</p>
+									<a href="${link_produit(produit.id)}" class="card-link">Voir le produit</a>
+								</div>
+							</div>
+						</div>
+		            `).join(""): '<h5>Aucun produit ne correspond !</h5>'}
+	            `);
+
+	            $('.list-magasins').html(`
+		            ${data.magasins && data.magasins.length > 0 ? data.magasins.map(magasin => `
+		                <div class="col-md-4">
+							<div class="card m-3">
+								<div class="card-body">
+									<h5 class="card-title">
+										${magasin.nom}
+									</h5>
+									<h6 class="card-subtitle mb-2 text-muted">${magasin.courriel}</h6>
+									<a href="${link_magasin(magasin.id)}" class="card-link">Voir le magasin</a>
+								</div>
+							</div>
+						</div>
+		            `).join(""): '<h5>Aucun magasin ne correspond !</h5>'}
+	            `);
+            }
+
+            // Start
+	        InputSearch.val("{{ app.request.get('q') }}");
+            buildResult({ produits, magasins });
+
+            if (InputSearch.length > 0) {
+
+                InputSearch.bind('paste keyup', (e) => {
+                    e.stopPropagation();
+
+                    let query = $(e.target).val();
+
+                    window.history.pushState("object or string", document.title, "search?q=" + query);
+                    $(`.query-search`).html(query);
+
+                    if (query.length >= LIMIT_SEARCH) {
+                        if (timer !== null) {
+                            clearTimeout(timer);
+                            timer = null;
+                        }
+
+                        timer = setTimeout(async () => {
+                            logger.log('HELLO MY FRIEND');
+
+                            let link = `{{ path('app_search') }}?q=${query}`;
+                            let data = await fetch(link, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            }).then((res) => res.json());
+
+                            if (data) {
+                                buildResult(data);
+                            }
+
+                        }, time * 1000);
+                    }
+                });
+
+            }
+
+        });
+	</script>
+
+{% endblock %}

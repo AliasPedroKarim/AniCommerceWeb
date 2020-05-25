@@ -1,0 +1,19 @@
+{{ form_start(form) }}
+
+    <div class="form-group">
+        <div class="col">
+        <div class=" custom-control custom-checkbox">
+            {{ form_widget(form.defaut, { 'attr': { 'class': 'custom-control-input' } }) }}
+            {{ form_label(form.defaut, "Adresse par Defaut") }}
+        </div>
+        </div>
+    </div>
+
+    <h2>Adresse</h2>
+
+    {{ include('adresse/_form.html.twig', { 'form': form_adresse, 'multi': true }) }}
+
+    {{ form_widget(form) }}
+
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}

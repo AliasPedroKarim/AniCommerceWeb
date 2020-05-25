@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <link rel="icon" type="image/gif" href="{{ asset('favicon.gif') }}">
+        {#<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">#}
+
+        <title>{% block title %}{{ app_name }}{% endblock %}</title>
+
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+
+        {% endblock %}
+
+        {% block javascripts_head %}
+
+        {% endblock %}
+    </head>
+    <body id="page-top">
+
+        {% if 'admin' not in app.request.pathInfo %}
+            {{ render(controller('App\\Controller\\AppController::navbar', {'pathInfo':app.request.pathInfo})) }}
+        {% endif %}
+
+        {% block body %}
+        {% endblock %}
+
+        {% if app.user %}
+            <!-- Logout Modal-->
+            <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Vous allez quitter !</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">Sélectionnez "Déconnexion" ci-dessous si vous êtes prêt à mettre fin à votre session en cours.</div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+                            <a class="btn btn-primary" href="{{ path('app_logout') }}">Deconnecter</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% block javascripts %}
+            {#<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>#}
+
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+            {# Here import js easing for jquery #}
+            {#{{ encore_entry_script_tags('jquery_easing') }}
+
+            {% for js in encore_entry_js_files('jquery_easing') %}
+                <script src="{{ asset(js) }}" type="text/javascript" defer="defer"></script>
+            {% endfor %}#}
+
+            <!-- JS, Popper.js, and jQuery -->
+
+
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+            {#<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>#}
+
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha256-bqVeqGdJ7h/lYPq6xrPv/YGzMEb6dNxlfiTUHSgRCp8=" crossorigin="anonymous"></script>
+
+            {{ encore_entry_script_tags('app') }}
+
+        {% endblock %}
+    </body>
+</html>

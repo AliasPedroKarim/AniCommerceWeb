@@ -1,0 +1,85 @@
+<div class="row">
+	{% for produit in produits %}
+		<div class="col-md-4">
+			<div class="card mb-4 shadow-3dp bg-light">
+				<div class="preview-img" id="PreviewImage" style="
+						background: url('{{ produit.images.empty != true ? produit.images.get(0).idImage.cheminImage : produit_image_default }}') no-repeat center;
+						background-size: cover;
+						height: 225px;">
+				</div>
+				<div class="card-body">
+					<h3>{{ produit.libelle }} </h3>
+
+
+					{% if app.user %}
+						{% if ligneCommandes is defined and produit.id in ligneCommandes|map((lc) => lc.idProduit.id) %}
+							{% for ligneCommande in ligneCommandes %}
+								{% if ligneCommande.idProduit.id == produit.id %}
+									<i class="fas fa-shopping-cart fa-sm"></i> {{ ligneCommande.quantite }}
+									<hr>
+								{% endif %}
+							{% endfor %}
+						{% endif %}
+					{% else %}
+						{% set sLigneCommandes = app.session.get('__ligne_commandes') %}
+						{% if produit.id in sLigneCommandes|keys %}
+							<i class="fas fa-shopping-cart fa-sm"></i> {{ sLigneCommandes[produit.id]['quantite'] }}
+							<hr>
+						{% endif %}
+					{% endif %}
+
+
+
+					<p class="card-text">{{ produit.description }}</p>
+					<p class="card-text">De chez <a href="{{ path('magasin_show', { 'id': produit.idMagasin.id }) }}">{{ produit.idMagasin.nom }}</a></p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+							<a type="button" href="{{ path('produit_show', {'id': produit.id}) }}" class="btn btn-sm btn-info">
+								Voir
+							</a>
+							<button type="button" href="{{ path('ligne_commande_new', {'produit': produit.id}) }}" class="btn btn-sm btn-success btn-ajout-produit"
+							data-id="{{ produit.id }}"
+					        data-stock="{{ produit.stock }}"
+						        {% if app.user %}
+							        {% if ligneCommandes is defined and produit.id in ligneCommandes|map((lc) => lc.idProduit.id) %}
+								        {% for ligneCommande in ligneCommandes %}
+									        {% if ligneCommande.idProduit.id == produit.id %}
+										        data-qte="{{ ligneCommande.quantite }}"
+										        data-link="{{ path('ligne_commande_edit', { 'id': ligneCommande.id }) }}"
+										        data-csrf="{{ csrf_token('ligne_commande_edit' ~ ligneCommande.id) }}"
+									        {% endif %}
+								        {% endfor %}
+							        {% else %}
+							            data-qte="0"
+							            data-link="{{ path('ligne_commande_new', {'produit': produit.id}) }}"
+							            data-csrf="{{ csrf_token('ligne_commande_new' ~ produit.id) }}"
+							        {% endif %}
+						        {% else %}
+									{% set sLigneCommandes = app.session.get('__ligne_commandes') %}
+									{% if produit.id in sLigneCommandes|keys %}
+										data-qte="{{ sLigneCommandes[produit.id]['quantite'] }}"
+										data-link="{{ path('ligne_commande_sedit', { 'produit': produit.id }) }}"
+										data-csrf="{{ csrf_token('session_edit' ~ produit.id) }}"
+									{% else %}
+										data-qte="0"
+										data-link="{{ path('ligne_commande_new', {'produit': produit.id}) }}"
+										data-csrf="{{ csrf_token('ligne_commande_new' ~ produit.id) }}"
+									{% endif %}
+								{% endif %}
+							>
+								Ajouter
+							</button>
+
+						</div>
+						<small class="text-muted">Stock : {{ produit.stock }}</small>
+						<small class="text-muted">Prix : {{ produit.prixHt }} €</small>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	{% else %}
+		<h1>Aucun produit n'est disponible !</h1>
+	{% endfor %}
+</div>
+
